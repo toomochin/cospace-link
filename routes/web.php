@@ -29,4 +29,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // 予約関連
     Route::post('/facilities/{id}/reservations/confirm', [ReservationController::class, 'confirm'])->name('reservations.confirm');
     Route::post('/facilities/{id}/reservations', [ReservationController::class, 'store'])->name('reservations.store');
+
+    // マイページ（予約一覧）とキャンセルのルート
+    Route::get('/my-reservations', [ReservationController::class, 'index'])->name('reservations.index');
+    Route::delete('/my-reservations/{id}', [ReservationController::class, 'destroy'])->name('reservations.destroy');
 });

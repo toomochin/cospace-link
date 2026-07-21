@@ -29,4 +29,11 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
         ];
     }
+    /**
+     * ユーザーに紐づく予約一覧のリレーション
+     */
+    public function reservations()
+    {
+        return $this->hasMany(Reservation::class);
+    }
 }
