@@ -18,9 +18,10 @@
             <div style="margin-bottom: 15px;">
                 <label style="display: block; font-weight: bold; margin-bottom: 5px;">施設タイプ</label>
                 <select name="type" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-                    <option value="room" {{ old('type', $facility->type) === 'room' ? 'selected' : '' }}>会議室・個室</option>
-                    <option value="desk" {{ old('type', $facility->type) === 'desk' ? 'selected' : '' }}>フリーデスク</option>
-                    <option value="other" {{ old('type', $facility->type) === 'other' ? 'selected' : '' }}>その他</option>
+                    <option value="meeting_room" {{ old('type', $facility->type) === 'meeting_room' ? 'selected' : '' }}>
+                        会議室・個室
+                    </option>
+                    <option value="area" {{ old('type', $facility->type) === 'area' ? 'selected' : '' }}>フリーデスク・エリア</option>
                 </select>
             </div>
 
