@@ -27,6 +27,24 @@
             </button>
         </form>
 
+        <!-- 施設タイプ別絞り込みタブ -->
+        <div style="display: flex; gap: 10px; margin-bottom: 25px;">
+            <a href="{{ route('home', array_merge(request()->query(), ['type' => null])) }}"
+                style="padding: 10px 20px; border-radius: 20px; text-decoration: none; font-weight: bold; font-size: 0.9em; {{ !request('type') ? 'background: #2563eb; color: #fff;' : 'background: #f3f4f6; color: #4b5563;' }}">
+                すべて
+            </a>
+
+            <a href="{{ route('home', array_merge(request()->query(), ['type' => 'meeting_room'])) }}"
+                style="padding: 10px 20px; border-radius: 20px; text-decoration: none; font-weight: bold; font-size: 0.9em; {{ request('type') === 'meeting_room' ? 'background: #2563eb; color: #fff;' : 'background: #f3f4f6; color: #4b5563;' }}">
+                🚪 会議室・個室
+            </a>
+
+            <a href="{{ route('home', array_merge(request()->query(), ['type' => 'area'])) }}"
+                style="padding: 10px 20px; border-radius: 20px; text-decoration: none; font-weight: bold; font-size: 0.9em; {{ request('type') === 'area' ? 'background: #2563eb; color: #fff;' : 'background: #f3f4f6; color: #4b5563;' }}">
+                🪑 フリーデスク・エリア
+            </a>
+        </div>
+
         {{-- 施設カード一覧 --}}
         <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;">
             @forelse ($facilities as $facility)
