@@ -8,6 +8,9 @@ use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Stripe\Stripe;
 use Stripe\Checkout\Session as StripeSession;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ReservationConfirmedMail;
+use App\Mail\ReservationCancelledMail;
 
 class ReservationController extends Controller
 {
@@ -119,6 +122,9 @@ class ReservationController extends Controller
         $reservation->status = 'confirmed';
         $reservation->save();
 
+        // 予約完了メールの送信
+        Mail::to($request->user())->send(new ReservationConfirmedMail($reservation));
+
         return view('reservations.success', compact('reservation'));
     }
 
@@ -159,6 +165,9 @@ class ReservationController extends Controller
 
         $reservation->status = 'cancelled';
         $reservation->save();
+
+        // キャンセル完了メールの送信
+        Mail::to($request->user())->send(new ReservationCancelledMail($reservation));
 
         return redirect()->route('reservations.index')->with('status', '予約をキャンセルしました。');
     }
