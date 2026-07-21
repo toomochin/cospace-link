@@ -4,6 +4,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\FacilityController;
 use App\Http\Controllers\ReservationController;
+use App\Http\Controllers\Admin\FacilityController as AdminFacilityController;
+use App\Http\Controllers\Admin\ReservationController as AdminReservationController;
+use App\Http\Middleware\AdminMiddleware;
 
 // 1. トップ画面（FacilityController経由で施設一覧を渡す）
 Route::get('/', [FacilityController::class, 'index'])
@@ -37,4 +40,17 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Stripe 決済成功・キャンセル時のルート
     Route::get('/reservations/{id}/success', [ReservationController::class, 'success'])->name('reservations.success');
     Route::get('/reservations/{id}/cancel', [ReservationController::class, 'cancel'])->name('reservations.cancel');
+});
+
+// 管理者専用ルート
+Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admin.')->group(function () {
+    // 施設管理
+    Route::get('/facilities', [AdminFacilityController::class, 'index'])->name('facilities.index');
+    Route::get('/facilities/create', [AdminFacilityController::class, 'create'])->name('facilities.create');
+    Route::post('/facilities', [AdminFacilityController::class, 'store'])->name('facilities.store');
+    Route::get('/facilities/{id}/edit', [AdminFacilityController::class, 'edit'])->name('facilities.edit');
+    Route::put('/facilities/{id}', [AdminFacilityController::class, 'update'])->name('facilities.update');
+
+    // 予約一覧確認
+    Route::get('/reservations', [AdminReservationController::class, 'index'])->name('reservations.index');
 });
