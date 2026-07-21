@@ -6,6 +6,8 @@ use App\Models\Facility;
 use App\Models\Reservation;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
+use Stripe\Stripe;
+use Stripe\Checkout\Session as StripeSession;
 
 class ReservationController extends Controller
 {
@@ -14,6 +16,11 @@ class ReservationController extends Controller
      */
     public function confirm(Request $request, $facility_id)
     {
+        // GETアクセス（リロード等）の場合は詳細画面に戻す
+        if ($request->isMethod('get')) {
+            return redirect()->route('facilities.show', $facility_id);
+        }
+
         $facility = Facility::where('is_active', true)->findOrFail($facility_id);
 
         $validated = $request->validate([
@@ -32,7 +39,7 @@ class ReservationController extends Controller
     }
 
     /**
-     * 予約の確定処理（DB保存）
+     * 予約の確定処理（Stripe 決済画面へリダイレクト）
      */
     public function store(Request $request, $facility_id)
     {
@@ -43,7 +50,7 @@ class ReservationController extends Controller
             'end_time' => ['required', 'date', 'after:start_time'],
         ]);
 
-        // 重複チェック（Facilityモデルに対するポリモーフィック検索）
+        // 重複チェック
         $exists = Reservation::where('reservable_id', $facility->id)
             ->where('reservable_type', Facility::class)
             ->where('status', '!=', 'cancelled')
@@ -57,18 +64,75 @@ class ReservationController extends Controller
             return back()->withErrors(['error' => '選択した時間帯は既に予約が入っています。']);
         }
 
-        // 予約レコード作成（既存マイグレーションのカラム名に合わせる）
-        Reservation::create([
+        // 利用コマ数（30分単位）と金額計算
+        $start = Carbon::parse($validated['start_time']);
+        $end = Carbon::parse($validated['end_time']);
+        $slots = $start->diffInMinutes($end) / 30;
+        $totalPrice = $facility->price_per_30min * $slots;
+
+        // 1. 仮予約レコードを作成（status: pending_payment）
+        $reservation = Reservation::create([
             'user_id' => $request->user()->id,
             'reservable_id' => $facility->id,
             'reservable_type' => Facility::class,
             'start_time' => $validated['start_time'],
             'end_time' => $validated['end_time'],
             'reserved_seats' => 1,
-            'status' => 'confirmed', // 一旦 confirmed で登録（将来的に決済連携で pending_payment に変更可能）
+            'status' => 'pending_payment',
         ]);
 
-        return redirect()->route('home')->with('status', '予約が完了しました！');
+        // 2. Stripe Checkout セッションを作成
+        Stripe::setApiKey(config('services.stripe.secret') ?? env('STRIPE_SECRET'));
+
+        $checkoutSession = StripeSession::create([
+            'payment_method_types' => ['card'],
+            'line_items' => [
+                [
+                    'price_data' => [
+                        'currency' => 'jpy',
+                        'product_data' => [
+                            'name' => "施設予約: {$facility->name}",
+                            'description' => "{$start->format('Y/m/d H:i')} 〜 {$end->format('H:i')}",
+                        ],
+                        'unit_amount' => $totalPrice,
+                    ],
+                    'quantity' => 1,
+                ]
+            ],
+            'mode' => 'payment',
+            'success_url' => route('reservations.success', ['id' => $reservation->id]),
+            'cancel_url' => route('reservations.cancel', ['id' => $reservation->id]),
+        ]);
+
+        // 3. Stripe 決済画面へリダイレクト
+        return redirect()->away($checkoutSession->url);
+    }
+
+    /**
+     * 決済成功時のコールバック
+     */
+    public function success(Request $request, $id)
+    {
+        $reservation = Reservation::where('user_id', $request->user()->id)->findOrFail($id);
+
+        // ステータスを「予約確定 (confirmed)」に変更
+        $reservation->status = 'confirmed';
+        $reservation->save();
+
+        return view('reservations.success', compact('reservation'));
+    }
+
+    /**
+     * 決済キャンセル時のコールバック
+     */
+    public function cancel(Request $request, $id)
+    {
+        $reservation = Reservation::where('user_id', $request->user()->id)->findOrFail($id);
+
+        // 決済未完了のため仮予約を削除
+        $reservation->delete();
+
+        return redirect()->route('home')->with('error', '決済がキャンセルされました。');
     }
 
     /**

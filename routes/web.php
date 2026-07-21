@@ -33,4 +33,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // マイページ（予約一覧）とキャンセルのルート
     Route::get('/my-reservations', [ReservationController::class, 'index'])->name('reservations.index');
     Route::delete('/my-reservations/{id}', [ReservationController::class, 'destroy'])->name('reservations.destroy');
+
+    // Stripe 決済成功・キャンセル時のルート
+    Route::get('/reservations/{id}/success', [ReservationController::class, 'success'])->name('reservations.success');
+    Route::get('/reservations/{id}/cancel', [ReservationController::class, 'cancel'])->name('reservations.cancel');
 });
