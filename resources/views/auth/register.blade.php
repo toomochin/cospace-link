@@ -1,65 +1,70 @@
-<!DOCTYPE html>
-<html lang="ja">
+@extends('layouts.app')
 
-<head>
-    <meta charset="UTF-8">
-    <title>新規会員登録 - Co-Space Link</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            margin: 50px;
-        }
+@section('content')
+    <div style="min-height: 70vh; display: flex; align-items: center; justify-content: center; padding: 20px 0;">
+        <div
+            style="width: 100%; max-width: 420px; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06); border: 1px solid #e5e7eb;">
 
-        .form-group {
-            margin-bottom: 15px;
-        }
+            <h2 style="margin: 0 0 24px 0; font-size: 1.5em; text-align: center; color: #1f2937;">新規会員登録</h2>
 
-        .error {
-            color: red;
-        }
-    </style>
-</head>
+            @if ($errors->any())
+                <div
+                    style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px; border-radius: 6px; font-size: 0.875em; margin-bottom: 20px;">
+                    <ul style="margin: 0; padding-left: 20px;">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            @endif
 
-<body>
-    <h1>新規会員登録</h1>
+            <form method="POST" action="{{ route('register') }}">
+                @csrf
 
-    @if ($errors->any())
-        <div class="error">
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
+                <!-- お名前 -->
+                <div style="margin-bottom: 18px;">
+                    <label for="name"
+                        style="display: block; font-size: 0.875em; font-weight: 600; color: #374151; margin-bottom: 6px;">お名前</label>
+                    <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus
+                        style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.95em; box-sizing: border-box;">
+                </div>
+
+                <!-- メールアドレス -->
+                <div style="margin-bottom: 18px;">
+                    <label for="email"
+                        style="display: block; font-size: 0.875em; font-weight: 600; color: #374151; margin-bottom: 6px;">メールアドレス</label>
+                    <input id="email" type="email" name="email" value="{{ old('email') }}" required
+                        style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.95em; box-sizing: border-box;">
+                </div>
+
+                <!-- パスワード -->
+                <div style="margin-bottom: 18px;">
+                    <label for="password"
+                        style="display: block; font-size: 0.875em; font-weight: 600; color: #374151; margin-bottom: 6px;">パスワード</label>
+                    <input id="password" type="password" name="password" required
+                        style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.95em; box-sizing: border-box;">
+                </div>
+
+                <!-- パスワード（確認用） -->
+                <div style="margin-bottom: 24px;">
+                    <label for="password_confirmation"
+                        style="display: block; font-size: 0.875em; font-weight: 600; color: #374151; margin-bottom: 6px;">パスワード（確認用）</label>
+                    <input id="password_confirmation" type="password" name="password_confirmation" required
+                        style="width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.95em; box-sizing: border-box;">
+                </div>
+
+                <!-- 登録ボタン -->
+                <button type="submit"
+                    style="width: 100%; padding: 12px; background: #2563eb; color: #fff; font-weight: bold; font-size: 0.95em; border: none; border-radius: 6px; cursor: pointer;">
+                    アカウントを作成する
+                </button>
+
+                <!-- ログインへの案内 -->
+                <div style="text-align: center; margin-top: 20px; font-size: 0.875em; color: #6b7280;">
+                    すでにアカウントをお持ちの方は
+                    <a href="{{ route('login') }}" style="color: #2563eb; text-decoration: none; font-weight: 600;">ログイン</a>
+                </div>
+            </form>
         </div>
-    @endif
-
-    <form method="POST" action="{{ route('register') }}">
-        @csrf
-
-        <div class="form-group">
-            <label for="name">お名前</label><br>
-            <input type="text" id="name" name="name" value="{{ old('name') }}" required autofocus>
-        </div>
-
-        <div class="form-group">
-            <label for="email">メールアドレス</label><br>
-            <input type="email" id="email" name="email" value="{{ old('email') }}" required>
-        </div>
-
-        <div class="form-group">
-            <label for="password">パスワード</label><br>
-            <input type="password" id="password" name="password" required>
-        </div>
-
-        <div class="form-group">
-            <label for="password_confirmation">パスワード（確認用）</label><br>
-            <input type="password" id="password_confirmation" name="password_confirmation" required>
-        </div>
-
-        <button type="submit">登録する</button>
-    </form>
-
-    <p><a href="{{ route('login') }}">ログインはこちら</a></p>
-</body>
-
-</html>
+    </div>
+@endsection
