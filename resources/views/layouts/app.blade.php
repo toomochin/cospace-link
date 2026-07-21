@@ -28,6 +28,14 @@
                 </a>
 
                 @auth
+                    {{-- 管理者ユーザーだけに表示 --}}
+                    @if(auth()->user()->is_admin)
+                        <a href="{{ route('admin.facilities.index') }}"
+                            style="margin-right: 15px; color: #dc2626; font-weight: bold; text-decoration: none;">
+                            ⚙️ 管理画面
+                        </a>
+                    @endif
+
                     {{-- ログイン中の表示 --}}
                     <a href="{{ route('reservations.index') }}"
                         style="color: #4b5563; text-decoration: none; font-size: 0.95em;">
