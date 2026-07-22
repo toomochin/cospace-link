@@ -11,6 +11,7 @@ use Stripe\Checkout\Session as StripeSession;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ReservationConfirmedMail;
 use App\Mail\ReservationCancelledMail;
+use App\Http\Requests\ReservationStoreRequest;
 
 class ReservationController extends Controller
 {
@@ -19,7 +20,6 @@ class ReservationController extends Controller
      */
     public function confirm(Request $request, $facility_id)
     {
-        // GETアクセス（リロード等）の場合は詳細画面に戻す
         if ($request->isMethod('get')) {
             return redirect()->route('facilities.show', $facility_id);
         }
@@ -36,6 +36,22 @@ class ReservationController extends Controller
         $slots = (int) $validated['duration'];
         $endAt = (clone $startAt)->addMinutes(30 * $slots);
 
+        // ★ 確認画面に進む前にも重複チェックを行う
+        $exists = Reservation::where('reservable_id', $facility->id)
+            ->where('reservable_type', Facility::class)
+            ->where('status', '!=', 'cancelled')
+            ->where(function ($query) use ($startAt, $endAt) {
+                $query->where('start_time', '<', $endAt)
+                    ->where('end_time', '>', $startAt);
+            })
+            ->exists();
+
+        if ($exists) {
+            return back()
+                ->withInput()
+                ->withErrors(['start_time' => '指定された時間帯にはすでに別の予約が入っています。']);
+        }
+
         $totalPrice = $facility->price_per_30min * $slots;
 
         return view('reservations.confirm', compact('facility', 'startAt', 'endAt', 'slots', 'totalPrice'));
@@ -44,28 +60,12 @@ class ReservationController extends Controller
     /**
      * 予約の確定処理（Stripe 決済画面へリダイレクト）
      */
-    public function store(Request $request, $facility_id)
+    public function store(ReservationStoreRequest $request, $facility_id)
     {
         $facility = Facility::where('is_active', true)->findOrFail($facility_id);
 
-        $validated = $request->validate([
-            'start_time' => ['required', 'date'],
-            'end_time' => ['required', 'date', 'after:start_time'],
-        ]);
-
-        // 重複チェック
-        $exists = Reservation::where('reservable_id', $facility->id)
-            ->where('reservable_type', Facility::class)
-            ->where('status', '!=', 'cancelled')
-            ->where(function ($query) use ($validated) {
-                $query->whereBetween('start_time', [$validated['start_time'], $validated['end_time']])
-                    ->orWhereBetween('end_time', [$validated['start_time'], $validated['end_time']]);
-            })
-            ->exists();
-
-        if ($exists) {
-            return back()->withErrors(['error' => '選択した時間帯は既に予約が入っています。']);
-        }
+        // Form Request でバリデーション＆重複チェック済みの安全なデータを取り出す
+        $validated = $request->validated();
 
         // 利用コマ数（30分単位）と金額計算
         $start = Carbon::parse($validated['start_time']);

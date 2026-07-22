@@ -1,6 +1,17 @@
 @extends('layouts.app')
 
 @section('content')
+    {{-- 重複エラー等の表示 --}}
+    @if ($errors->any())
+        <div
+            style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px; border-radius: 6px; margin-bottom: 20px;">
+            <ul style="margin: 0; padding-left: 20px;">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
     <div style="max-width: 700px; margin: 0 auto;">
         <a href="{{ route('home') }}" style="color: #666; text-decoration: none;">&larr; 一覧に戻る</a>
 

@@ -4,11 +4,15 @@
     <div style="max-width: 600px; margin: 0 auto;">
         <h2>予約内容の確認</h2>
 
+        {{-- バリデーションエラー・重複エラーの表示 --}}
         @if ($errors->any())
-            <div style="color: red; margin-bottom: 15px;">
-                @foreach ($errors->all() as $error)
-                    <p>{{ $error }}</p>
-                @endforeach
+            <div
+                style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px; border-radius: 6px; margin-bottom: 20px;">
+                <ul style="margin: 0; padding-left: 20px;">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
             </div>
         @endif
 

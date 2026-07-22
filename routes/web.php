@@ -29,7 +29,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
 
     // 予約関連
-    Route::post('/facilities/{id}/reservations/confirm', [ReservationController::class, 'confirm'])->name('reservations.confirm');
+    Route::match(['get', 'post'], '/facilities/{id}/reservations/confirm', [ReservationController::class, 'confirm'])
+        ->name('reservations.confirm');
     Route::post('/facilities/{id}/reservations', [ReservationController::class, 'store'])->name('reservations.store');
 
     // マイページ（予約一覧）とキャンセルのルート
