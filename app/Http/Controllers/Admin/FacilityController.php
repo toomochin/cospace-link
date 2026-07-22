@@ -3,14 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\FacilityStoreRequest;
 use App\Models\Facility;
-use Illuminate\Http\Request;
 
 class FacilityController extends Controller
 {
     public function index()
     {
-        // IDの昇順（1, 2, 3...）で取得
         $facilities = Facility::orderBy('id', 'asc')->get();
         return view('admin.facilities.index', compact('facilities'));
     }
@@ -20,20 +19,10 @@ class FacilityController extends Controller
         return view('admin.facilities.create');
     }
 
-    public function store(Request $request)
+    public function store(FacilityStoreRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'type' => 'required|string|max:50',
-            'description' => 'nullable|string',
-            'price_per_30min' => 'required|integer|min:0',
-            'capacity' => 'required|integer|min:1',
-            'is_active' => 'boolean',
-        ]);
-
-        $validated['is_active'] = $request->has('is_active');
-
-        Facility::create($validated);
+        // バリデーション済み＆is_activeが整形された安全なデータを取得
+        Facility::create($request->validated());
 
         return redirect()->route('admin.facilities.index')->with('status', '施設を追加しました。');
     }
@@ -44,22 +33,12 @@ class FacilityController extends Controller
         return view('admin.facilities.edit', compact('facility'));
     }
 
-    public function update(Request $request, $id)
+    public function update(FacilityStoreRequest $request, $id)
     {
         $facility = Facility::findOrFail($id);
 
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'type' => 'required|string|max:50',
-            'description' => 'nullable|string',
-            'price_per_30min' => 'required|integer|min:0',
-            'capacity' => 'required|integer|min:1',
-            'is_active' => 'boolean',
-        ]);
-
-        $validated['is_active'] = $request->has('is_active');
-
-        $facility->update($validated);
+        // バリデーション済み＆is_activeが整形された安全なデータで更新
+        $facility->update($request->validated());
 
         return redirect()->route('admin.facilities.index')->with('status', '施設情報を更新しました。');
     }

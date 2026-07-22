@@ -5,47 +5,83 @@
         style="max-width: 600px; margin: 0 auto; background: #fff; padding: 30px; border-radius: 8px; border: 1px solid #e5e7eb;">
         <h2 style="margin-top: 0;">施設情報の編集</h2>
 
+        {{-- エラーメッセージ表示エリア --}}
+        @if ($errors->any())
+            <div
+                style="background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; padding: 12px; border-radius: 6px; margin-bottom: 20px;">
+                <ul style="margin: 0; padding-left: 20px;">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
         <form action="{{ route('admin.facilities.update', $facility->id) }}" method="POST">
             @csrf
             @method('PUT')
 
+            {{-- 施設名 --}}
             <div style="margin-bottom: 15px;">
                 <label style="display: block; font-weight: bold; margin-bottom: 5px;">施設名</label>
-                <input type="text" name="name" value="{{ old('name', $facility->name) }}" required
-                    style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <input type="text" name="name" value="{{ old('name', $facility->name) }}"
+                    style="width: 100%; padding: 8px; border: 1px solid {{ $errors->has('name') ? '#dc2626' : '#ccc' }}; border-radius: 4px;">
+                @error('name')
+                    <span style="color: #dc2626; font-size: 0.85em;">{{ $message }}</span>
+                @enderror
             </div>
 
+            {{-- 施設タイプ --}}
             <div style="margin-bottom: 15px;">
                 <label style="display: block; font-weight: bold; margin-bottom: 5px;">施設タイプ</label>
-                <select name="type" required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <select name="type"
+                    style="width: 100%; padding: 8px; border: 1px solid {{ $errors->has('type') ? '#dc2626' : '#ccc' }}; border-radius: 4px;">
                     <option value="meeting_room" {{ old('type', $facility->type) === 'meeting_room' ? 'selected' : '' }}>
                         会議室・個室
                     </option>
-                    <option value="area" {{ old('type', $facility->type) === 'area' ? 'selected' : '' }}>フリーデスク・エリア</option>
+                    <option value="area" {{ old('type', $facility->type) === 'area' ? 'selected' : '' }}>
+                        フリーデスク・エリア
+                    </option>
                 </select>
+                @error('type')
+                    <span style="color: #dc2626; font-size: 0.85em;">{{ $message }}</span>
+                @enderror
             </div>
 
+            {{-- 説明 --}}
             <div style="margin-bottom: 15px;">
                 <label style="display: block; font-weight: bold; margin-bottom: 5px;">説明</label>
                 <textarea name="description" rows="4"
-                    style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">{{ old('description', $facility->description) }}</textarea>
+                    style="width: 100%; padding: 8px; border: 1px solid {{ $errors->has('description') ? '#dc2626' : '#ccc' }}; border-radius: 4px;">{{ old('description', $facility->description) }}</textarea>
+                @error('description')
+                    <span style="color: #dc2626; font-size: 0.85em;">{{ $message }}</span>
+                @enderror
             </div>
 
+            {{-- 料金 --}}
             <div style="margin-bottom: 15px;">
                 <label style="display: block; font-weight: bold; margin-bottom: 5px;">30分あたりの料金 (円)</label>
                 <input type="number" name="price_per_30min" value="{{ old('price_per_30min', $facility->price_per_30min) }}"
-                    required style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                    style="width: 100%; padding: 8px; border: 1px solid {{ $errors->has('price_per_30min') ? '#dc2626' : '#ccc' }}; border-radius: 4px;">
+                @error('price_per_30min')
+                    <span style="color: #dc2626; font-size: 0.85em;">{{ $message }}</span>
+                @enderror
             </div>
 
+            {{-- 定員 --}}
             <div style="margin-bottom: 15px;">
                 <label style="display: block; font-weight: bold; margin-bottom: 5px;">定員 (人)</label>
-                <input type="number" name="capacity" value="{{ old('capacity', $facility->capacity) }}" required
-                    style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                <input type="number" name="capacity" value="{{ old('capacity', $facility->capacity) }}"
+                    style="width: 100%; padding: 8px; border: 1px solid {{ $errors->has('capacity') ? '#dc2626' : '#ccc' }}; border-radius: 4px;">
+                @error('capacity')
+                    <span style="color: #dc2626; font-size: 0.85em;">{{ $message }}</span>
+                @enderror
             </div>
 
+            {{-- 公開フラグ --}}
             <div style="margin-bottom: 20px;">
                 <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                    <input type="checkbox" name="is_active" value="1" {{ $facility->is_active ? 'checked' : '' }}>
+                    <input type="checkbox" name="is_active" value="1" {{ old('is_active', $facility->is_active) ? 'checked' : '' }}>
                     <span>公開（予約受付を有効にする）</span>
                 </label>
             </div>

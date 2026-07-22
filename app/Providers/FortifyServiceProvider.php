@@ -6,15 +6,19 @@ use App\Actions\Fortify\CreateNewUser;
 use App\Actions\Fortify\ResetUserPassword;
 use App\Actions\Fortify\UpdateUserPassword;
 use App\Actions\Fortify\UpdateUserProfileInformation;
+use App\Http\Responses\VerifyEmailResponse;
+use App\Models\User;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Actions\RedirectIfTwoFactorAuthenticatable;
-use Laravel\Fortify\Fortify;
 use Laravel\Fortify\Contracts\VerifyEmailResponse as VerifyEmailResponseContract;
-use App\Http\Responses\VerifyEmailResponse;
+use Laravel\Fortify\Fortify;
 
 class FortifyServiceProvider extends ServiceProvider
 {
@@ -57,6 +61,33 @@ class FortifyServiceProvider extends ServiceProvider
             return Limit::perMinute(10)->by(
                 ($credentialId ?: $request->session()->getId()) . '|' . $request->ip()
             );
+        });
+
+        // ----------------------------------------------------
+        // ログイン処理＆日本語バリデーションのカスタマイズ
+        // ----------------------------------------------------
+        Fortify::authenticateUsing(function (Request $request) {
+            // 1. 未入力等の事前チェック（日本語メッセージ指定）
+            Validator::make($request->all(), [
+                'email' => ['required', 'string', 'email'],
+                'password' => ['required', 'string'],
+            ], [
+                'email.required' => 'メールアドレスを入力してください。',
+                'email.email' => '有効なメールアドレス形式で入力してください。',
+                'password.required' => 'パスワードを入力してください。',
+            ])->validate();
+
+            // 2. ユーザー取得＆パスワード照合
+            $user = User::where('email', $request->email)->first();
+
+            if ($user && Hash::check($request->password, $user->password)) {
+                return $user;
+            }
+
+            // 3. 認証失敗時の日本語エラーメッセージ
+            throw ValidationException::withMessages([
+                Fortify::username() => ['メールアドレスまたはパスワードが正しくありません。'],
+            ]);
         });
 
         // ログイン画面の指定
