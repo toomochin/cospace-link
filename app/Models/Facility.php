@@ -17,5 +17,6 @@ class Facility extends Model
         'equipment',
         'description',
         'is_active',
+        'image_path',
     ];
 }

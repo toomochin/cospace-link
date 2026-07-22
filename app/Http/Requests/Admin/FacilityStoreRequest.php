@@ -36,6 +36,7 @@ class FacilityStoreRequest extends FormRequest
             'price_per_30min' => ['required', 'integer', 'min:0'],
             'capacity' => ['required', 'integer', 'min:1'],
             'is_active' => ['boolean'],
+            'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,webp', 'max:2048'],
         ];
     }
 
@@ -51,6 +52,9 @@ class FacilityStoreRequest extends FormRequest
             'price_per_30min.min' => '料金は0円以上で入力してください。',
             'capacity.required' => '定員を入力してください。',
             'capacity.min' => '定員は1名以上で指定してください。',
+            'image.image' => '指定されたファイルが画像ではありません。',
+            'image.mimes' => '画像は jpeg, png, jpg, gif, webp 形式でアップロードしてください。',
+            'image.max' => '画像サイズは 2MB 以下にしてください。',
         ];
     }
 }

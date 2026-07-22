@@ -18,6 +18,7 @@ return new class extends Migration {
             $table->integer('capacity'); // 定員
             $table->string('equipment')->nullable(); // 設備・備品
             $table->text('description')->nullable(); // 説明文
+            $table->string('image_path')->nullable(); // 画像ファイルパスを追加
             $table->boolean('is_active')->default(true); // 有効フラグ
             $table->timestamps();
         });

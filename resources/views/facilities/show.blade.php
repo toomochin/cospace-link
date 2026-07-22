@@ -21,6 +21,14 @@
                 {{ $facility->type === 'meeting_room' || $facility->type === 'room' ? '会議室' : 'エリア席' }}
             </span>
 
+            {{-- ★ 施設画像の表示エリア（サイズ・レイアウト調整版） --}}
+            @if ($facility->image_path)
+                <div style="margin-bottom: 20px; text-align: center;">
+                    <img src="{{ asset('storage/' . $facility->image_path) }}" alt="{{ $facility->name }}" 
+                        style="max-width: 500px; width: 100%; height: 260px; object-fit: cover; border-radius: 8px; border: 1px solid #eee; display: block; margin: 0 auto;">
+                </div>
+            @endif
+
             <h2 style="margin: 0 0 15px 0;">{{ $facility->name }}</h2>
             <p style="color: #555; line-height: 1.6;">{{ $facility->description }}</p>
 
@@ -132,7 +140,7 @@
         @endif
     </div>
 
-    {{-- イベントリスナー形式にして Blade と JS を完全分離（DEVSENSE構文解析エラーを根本回避） --}}
+    {{-- イベントリスナー形式にして Blade と JS を完全分離 --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             var buttons = document.querySelectorAll('.slot-btn');
