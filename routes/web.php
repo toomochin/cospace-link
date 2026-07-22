@@ -54,4 +54,8 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admi
 
     // 予約一覧確認
     Route::get('/reservations', [AdminReservationController::class, 'index'])->name('reservations.index');
+
+    // ★ 代理予約機能を追加
+    Route::get('/reservations/create', [AdminReservationController::class, 'create'])->name('reservations.create');
+    Route::post('/reservations', [AdminReservationController::class, 'store'])->name('reservations.store');
 });

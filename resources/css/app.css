@@ -1,9 +1,168 @@
-@import 'tailwindcss';
+/* ==================================================
+ * 管理画面：全ユーザー予約一覧
+ * ================================================== */
 
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
+/* コンテナ */
+.admin-reservations-container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
 
-@theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+/* ヘッダー周り */
+.admin-reservations-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.admin-reservations-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.btn-primary-sm {
+    background-color: #2563eb;
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.9em;
+    transition: background-color 0.2s;
+}
+
+.btn-primary-sm:hover {
+    background-color: #1d4ed8;
+}
+
+.link-back {
+    color: #2563eb;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+.link-back:hover {
+    text-decoration: underline;
+}
+
+/* テーブルスタイル */
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.admin-table th,
+.admin-table td {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.admin-table th {
+    background-color: #f9fafb;
+    text-align: left;
+    font-weight: 600;
+}
+
+.admin-table td.font-bold {
+    font-weight: bold;
+}
+
+.admin-table td.text-sm {
+    font-size: 0.9em;
+}
+
+.admin-table td.empty-message {
+    padding: 20px;
+    text-align: center;
+    color: #6b7280;
+}
+
+/* バッジ（ステータス） */
+.badge {
+    display: inline-block;
+    padding: 2px 8px;
+    font-size: 0.8em;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.badge-success {
+    background-color: #e6f4ea;
+    color: #137333;
+}
+
+.badge-danger {
+    background-color: #fce8e6;
+    color: #c5221f;
+}
+
+.badge-warning {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+/* ページネーション横揃え設定 */
+.pagination-wrapper {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.pagination-wrapper .pagination {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    list-style: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    gap: 6px !important;
+}
+
+.pagination-wrapper .pagination li {
+    display: inline-block !important;
+}
+
+.pagination-wrapper .pagination li a,
+.pagination-wrapper .pagination li span {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px;
+    color: #2563eb;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 0.9em;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.pagination-wrapper .pagination li a:hover {
+    background-color: #f3f4f6;
+    color: #1d4ed8;
+}
+
+.pagination-wrapper .pagination li.active span {
+    background-color: #2563eb;
+    color: #ffffff;
+    border-color: #2563eb;
+}
+
+.pagination-wrapper .pagination li.disabled span {
+    color: #9ca3af;
+    background-color: #f9fafb;
+    border-color: #e5e7eb;
+}
+
+/* 一時的なテスト用スタイル */
+body {
+    background-color: red !important;
 }

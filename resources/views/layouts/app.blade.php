@@ -5,7 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ config('app.name', 'Co-Space Link') }}</title>
-    <!-- スタイル等の読み込み -->
+
+    {{-- 固定のクエリ文字列で読み込み --}}
+    <link rel="stylesheet" href="{{ asset('css/admin.css') }}?v=1.0">
 </head>
 
 <body style="margin: 0; background-color: #f8f9fa; font-family: sans-serif; color: #333;">
