@@ -44,15 +44,26 @@
 
                     <div
                         style="display: flex; align-items: center; gap: 10px; margin-left: 10px; border-left: 1px solid #e5e7eb; padding-left: 15px;">
-                        <span style="font-size: 0.85em; color: #6b7280;">
-                            {{ Auth::user()->name }} さん
-                        </span>
+                        {{-- プロフィール編集へのリンク（画像アイコン ＋ ユーザー名） --}}
+                        <a href="{{ route('profile.edit') }}"
+                            style="display: flex; align-items: center; gap: 6px; text-decoration: none; color: #4b5563; font-size: 0.85em;"
+                            title="プロフィール編集">
+
+                            @if (Auth::user()->profile_image_path)
+                                <img src="{{ asset('storage/' . Auth::user()->profile_image_path) }}" alt="アイコン"
+                                    style="width: 24px; height: 24px; border-radius: 50%; object-fit: cover; border: 1px solid #d1d5db;">
+                            @else
+                                <span style="font-size: 1.1em;">👤</span>
+                            @endif
+
+                            <span style="font-weight: 500;">{{ Auth::user()->name }} さん</span>
+                        </a>
 
                         <!-- ログアウトフォーム -->
                         <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
                             @csrf
                             <button type="submit"
-                                style="background: none; border: none; color: #dc2626; font-size: 0.85em; cursor: pointer; padding: 0;">
+                                style="background: none; border: none; color: #dc2626; font-size: 0.85em; cursor: pointer; padding: 0; margin-left: 5px;">
                                 ログアウト
                             </button>
                         </form>

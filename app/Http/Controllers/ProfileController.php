@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ProfileUpdateRequest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
@@ -20,32 +22,37 @@ class ProfileController extends Controller
     /**
      * プロフィール更新処理
      */
-    public function update(Request $request)
+    public function update(ProfileUpdateRequest $request)
     {
         $user = $request->user();
+        $validated = $request->validated(); // 検証済みデータを取得
 
-        // 1. バリデーション（nameとprofile_imageのみにする）
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'profile_image' => ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
-        ]);
-
-        // 2. プロフィール画像のアップロード処理
+        // 1. プロフィール画像のアップロード処理
         if ($request->hasFile('profile_image')) {
-            // 既存画像があればストレージから削除
             if ($user->profile_image_path) {
                 Storage::disk('public')->delete($user->profile_image_path);
             }
-            // 新しい画像を storage/app/public/profiles に保存
             $path = $request->file('profile_image')->store('profiles', 'public');
             $user->profile_image_path = $path;
         }
 
-        // 3. データの更新（postcode, building は削除）
+        // 2. メールアドレス変更時の処理（再認証フラグのリセット）
+        if ($validated['email'] !== $user->email) {
+            $user->email = $validated['email'];
+            $user->email_verified_at = null;
+            $user->sendEmailVerificationNotification();
+        }
+
+        // 3. 名前の更新
         $user->name = $validated['name'];
+
+        // 4. パスワード更新（入力がある場合のみ）
+        if (!empty($validated['password'])) {
+            $user->password = Hash::make($validated['password']);
+        }
+
         $user->save();
 
-        // 4. 更新完了後、トップ画面（home）へリダイレクト
-        return redirect()->route('home')->with('status', 'プロフィールを更新しました！');
+        return redirect()->route('profile.edit')->with('status', 'プロフィールを更新しました！');
     }
 }
