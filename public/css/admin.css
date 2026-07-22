@@ -22,6 +22,7 @@
     margin: 0;
     font-size: 1.5rem;
     color: #1f2937;
+    font-weight: bold;
 }
 
 .admin-header-actions {
@@ -30,12 +31,45 @@
     align-items: center;
 }
 
+/* フォーム・詳細画面用カードコンテナ */
+.admin-card-container,
+.admin-card {
+    max-width: 650px;
+    margin: 0 auto;
+    background: #ffffff;
+    padding: 30px;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
 /* --------------------------------------------------
- * 2. ボタン & リンク（汎用クラス）
+ * 2. ボタン & リンク
  * -------------------------------------------------- */
 /* 主要アクションボタン（青） */
 .btn-primary {
     background: #2563eb;
+    color: #ffffff;
+    padding: 10px 20px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.9em;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: background-color 0.2s ease;
+}
+
+.btn-primary:hover {
+    background: #1d4ed8;
+}
+
+.btn-primary-sm {
+    background-color: #2563eb;
     color: #ffffff;
     padding: 8px 16px;
     border-radius: 4px;
@@ -44,14 +78,45 @@
     font-size: 0.9em;
     border: none;
     cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
     transition: background-color 0.2s ease;
 }
 
-.btn-primary:hover {
-    background: #1d4ed8;
+.btn-primary-sm:hover {
+    background-color: #1d4ed8;
+}
+
+/* サブアクションボタン（グレー） */
+.btn-secondary {
+    background: #4b5563;
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 0.9em;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.btn-secondary:hover {
+    background: #374151;
+}
+
+/* キャンセル用ボタン */
+.btn-cancel {
+    padding: 10px 20px;
+    background: #e5e7eb;
+    color: #374151;
+    text-decoration: none;
+    border-radius: 6px;
+    font-size: 0.9em;
+    display: inline-block;
+    transition: background-color 0.2s ease;
+}
+
+.btn-cancel:hover {
+    background: #d1d5db;
 }
 
 /* 危険アクションボタン（赤：削除・キャンセルなど） */
@@ -71,19 +136,117 @@
     background: #b91c1c;
 }
 
-/* 戻る・サブリンク */
-.link-secondary {
+/* リンク用スタイル */
+.link-secondary,
+.link-action {
     color: #2563eb;
     text-decoration: none;
     font-weight: bold;
 }
 
-.link-secondary:hover {
+.link-secondary:hover,
+.link-action:hover {
     text-decoration: underline;
 }
 
 /* --------------------------------------------------
- * 3. テーブル（全画面共通データ表示）
+ * 3. フォーム要素
+ * -------------------------------------------------- */
+.form-group {
+    margin-bottom: 16px;
+}
+
+.form-label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 6px;
+    font-size: 0.9em;
+    color: #374151;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    box-sizing: border-box;
+    font-size: 0.95em;
+    background-color: #ffffff;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.form-control.is-invalid {
+    border-color: #dc2626 !important;
+}
+
+/* 2カラムフォーム */
+.form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.form-row .form-group {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.form-help {
+    font-size: 0.8em;
+    color: #6b7280;
+    margin: 4px 0 0 0;
+}
+
+.error-message {
+    color: #dc2626;
+    font-size: 0.85em;
+    margin-top: 4px;
+    display: block;
+}
+
+.form-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 0.95em;
+    color: #374151;
+}
+
+/* --------------------------------------------------
+ * 4. メッセージ・アラート通知
+ * -------------------------------------------------- */
+.alert-success {
+    color: #137333;
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    background: #e6f4ea;
+    border: 1px solid #ceead6;
+    border-radius: 6px;
+    font-size: 0.9em;
+}
+
+.alert-danger {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+    padding: 12px 16px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+
+.alert-danger ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+/* --------------------------------------------------
+ * 5. テーブル（データ表示）
  * -------------------------------------------------- */
 .admin-table {
     width: 100%;
@@ -108,7 +271,7 @@
     color: #374151;
 }
 
-/* テーブル用の汎用補助クラス */
+/* テーブル用の補助クラス */
 .admin-table td.col-id {
     width: 80px;
 }
@@ -138,72 +301,39 @@
 }
 
 /* --------------------------------------------------
- * 4. ステータスバッジ
+ * 6. ステータスバッジ
  * -------------------------------------------------- */
-.badge-status {
+.badge-status,
+.badge {
     display: inline-block;
-    padding: 2px 8px;
+    padding: 4px 10px;
     font-size: 0.8em;
-    border-radius: 4px;
+    border-radius: 9999px;
     font-weight: 500;
 }
 
 .badge-status.confirmed,
-.badge-status.active {
+.badge-status.active,
+.badge-success {
     background: #e6f4ea;
     color: #137333;
 }
 
 .badge-status.cancelled,
-.badge-status.inactive {
+.badge-status.inactive,
+.badge-danger {
     background: #fce8e6;
     color: #c5221f;
 }
 
-.badge-status.pending {
+.badge-status.pending,
+.badge-warning {
     background: #fff3cd;
     color: #856404;
 }
 
 /* --------------------------------------------------
- * 5. フォーム要素（新規登録・編集画面用）
- * -------------------------------------------------- */
-.admin-card {
-    background: #ffffff;
-    border: 1px solid #e5e7eb;
-    border-radius: 6px;
-    padding: 24px;
-}
-
-.form-group {
-    margin-bottom: 16px;
-}
-
-.form-label {
-    display: block;
-    font-weight: bold;
-    margin-bottom: 6px;
-    font-size: 0.9em;
-    color: #374151;
-}
-
-.form-control {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #d1d5db;
-    border-radius: 4px;
-    box-sizing: border-box;
-    font-size: 0.95em;
-}
-
-.form-control:focus {
-    outline: none;
-    border-color: #2563eb;
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
-}
-
-/* --------------------------------------------------
- * 6. ページネーション（共通）
+ * 7. ページネーション
  * -------------------------------------------------- */
 .admin-pagination-container {
     margin-top: 24px;
@@ -262,146 +392,9 @@
     border-color: #e5e7eb !important;
 }
 
-/* アラートメッセージ */
-.alert-success {
-    color: #137333;
-    margin-bottom: 15px;
-    padding: 10px 16px;
-    background: #e6f4ea;
-    border: 1px solid #ceead6;
-    border-radius: 4px;
-    font-size: 0.9em;
-}
-
-/* 灰色のサブボタン（全予約一覧を見るボタン用） */
-.btn-secondary {
-    background: #4b5563;
-    color: #ffffff;
-    padding: 8px 16px;
-    border-radius: 4px;
-    text-decoration: none;
-    font-weight: bold;
-    font-size: 0.9em;
-    transition: background-color 0.2s ease;
-}
-
-.btn-secondary:hover {
-    background: #374151;
-}
-
-/* 編集リンク */
-.link-action {
-    color: #2563eb;
-    text-decoration: none;
-    font-weight: 500;
-}
-
-.link-action:hover {
-    text-decoration: underline;
-}
-
-/* ==================================================
- * フォーム・カードレイアウト
- * ================================================== */
-
-/* フォーム用のカード風コンテナ */
-.admin-card-container {
-    max-width: 650px;
-    margin: 0 auto;
-    background: #ffffff;
-    padding: 30px;
-    border-radius: 8px;
-    border: 1px solid #e5e7eb;
-}
-
-/* 2カラムフォーム用グループ */
-.form-row {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 15px;
-}
-
-.form-row .form-group {
-    flex: 1;
-    margin-bottom: 0;
-}
-
-/* フォームコントロールの共通化 */
-.form-control {
-    width: 100%;
-    padding: 8px 12px;
-    border: 1px solid #d1d5db;
-    border-radius: 4px;
-    box-sizing: border-box;
-    font-size: 0.95em;
-}
-
-/* エラー時の赤枠 */
-.form-control.is-invalid {
-    border-color: #dc2626 !important;
-}
-
-/* エラーアラートボックス */
-.alert-danger {
-    background: #fef2f2;
-    border: 1px solid #fecaca;
-    color: #991b1b;
-    padding: 12px 16px;
-    border-radius: 6px;
-    margin-bottom: 20px;
-}
-
-.alert-danger ul {
-    margin: 0;
-    padding-left: 20px;
-}
-
-/* キャンセル・グレーボタン */
-.btn-cancel {
-    padding: 10px 20px;
-    background: #e5e7eb;
-    color: #374151;
-    text-decoration: none;
-    border-radius: 4px;
-    font-size: 0.9em;
-    display: inline-block;
-    transition: background-color 0.2s ease;
-}
-
-.btn-cancel:hover {
-    background: #d1d5db;
-}
-
-/* ==================================================
- * フォーム装飾・プレビューパーツ
- * ================================================== */
-
-/* フォーム注記テキスト */
-.form-help {
-    font-size: 0.8em;
-    color: #6b7280;
-    margin: 4px 0 0 0;
-}
-
-/* バリデーションエラーメッセージ */
-.error-message {
-    color: #dc2626;
-    font-size: 0.85em;
-    margin-top: 4px;
-    display: block;
-}
-
-/* チェックボックス・ラベル */
-.form-checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    font-size: 0.95em;
-    color: #374151;
-}
-
-/* 画像プレビューエリア */
+/* --------------------------------------------------
+ * 8. 画像プレビューパーツ
+ * -------------------------------------------------- */
 .preview-container {
     margin-bottom: 10px;
 }
