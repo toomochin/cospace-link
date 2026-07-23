@@ -32,6 +32,22 @@ class FortifyServiceProvider extends ServiceProvider
             VerifyEmailResponseContract::class,
             VerifyEmailResponse::class
         );
+
+        // ★ redirect()->route(...) に変更して強制リダイレクト
+        $this->app->singleton(LoginResponseContract::class, function () {
+            return new class implements LoginResponseContract {
+                public function toResponse($request)
+                {
+                    // 管理者の場合は管理者ダッシュボードへ強制リダイレクト
+                    if ($request->user() && $request->user()->is_admin) {
+                        return redirect()->route('admin.dashboard');
+                    }
+
+                    // 一般ユーザーはトップページへ
+                    return redirect()->route('home');
+                }
+            };
+        });
     }
 
     /**
@@ -81,6 +97,14 @@ class FortifyServiceProvider extends ServiceProvider
             $user = User::where('email', $request->email)->first();
 
             if ($user && Hash::check($request->password, $user->password)) {
+
+                // ★ ここを追加！管理者の場合は直接リダイレクト先をセッションに仕込むかリダイレクトさせる
+                if ($user->is_admin) {
+                    session()->put('url.intended', route('admin.dashboard'));
+                } else {
+                    session()->put('url.intended', route('home'));
+                }
+
                 return $user;
             }
 
