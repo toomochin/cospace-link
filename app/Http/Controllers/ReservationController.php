@@ -36,7 +36,7 @@ class ReservationController extends Controller
         $slots = (int) $validated['duration'];
         $endAt = (clone $startAt)->addMinutes(30 * $slots);
 
-        // ★ 確認画面に進む前にも重複チェックを行う
+        // 重複チェック
         $exists = Reservation::where('reservable_id', $facility->id)
             ->where('reservable_type', Facility::class)
             ->where('status', '!=', 'cancelled')
@@ -58,22 +58,50 @@ class ReservationController extends Controller
     }
 
     /**
-     * 予約の確定処理（Stripe 決済画面へリダイレクト）
+     * 予約の確定処理（クレカ or 現地払いの分岐）
      */
     public function store(ReservationStoreRequest $request, $facility_id)
     {
         $facility = Facility::where('is_active', true)->findOrFail($facility_id);
 
-        // Form Request でバリデーション＆重複チェック済みの安全なデータを取り出す
         $validated = $request->validated();
 
-        // 利用コマ数（30分単位）と金額計算
-        $start = Carbon::parse($validated['start_time']);
-        $end = Carbon::parse($validated['end_time']);
-        $slots = $start->diffInMinutes($end) / 30;
-        $totalPrice = $facility->price_per_30min * $slots;
+        // 1. お支払い方法の取得
+        $paymentType = $request->input('payment_type', 'credit_card');
 
-        // 1. 仮予約レコードを作成（status: pending_payment）
+        // 2. 金額の取得（確認画面から送られた total_price を最優先）
+        $totalPrice = $request->input('total_price');
+
+        // もし total_price が送られてこなかった場合のみ安全に再計算
+        if (is_null($totalPrice) || $totalPrice === '') {
+            $start = Carbon::parse($validated['start_time']);
+            $end = Carbon::parse($validated['end_time']);
+            $minutes = $start->diffInMinutes($end);
+            $slots = max(1, (int) ceil($minutes / 30)); // 最低1コマを保証
+            $totalPrice = $facility->price_per_30min * $slots;
+        }
+
+        // ★ 現地払いの処理
+        if ($paymentType === 'onsite') {
+            $reservation = Reservation::create([
+                'user_id' => $request->user()->id,
+                'reservable_id' => $facility->id,
+                'reservable_type' => Facility::class,
+                'start_time' => $validated['start_time'],
+                'end_time' => $validated['end_time'],
+                'reserved_seats' => 1,
+                'price' => $totalPrice, // ★ 確実に金額が入ります
+                'payment_type' => 'onsite',
+                'status' => 'confirmed',
+            ]);
+
+            // 完了メールの送信
+            Mail::to($reservation->user)->send(new ReservationConfirmedMail($reservation));
+
+            return view('reservations.success', compact('reservation'));
+        }
+
+        // ★ クレジットカード決済の処理（Stripe）
         $reservation = Reservation::create([
             'user_id' => $request->user()->id,
             'reservable_id' => $facility->id,
@@ -81,11 +109,15 @@ class ReservationController extends Controller
             'start_time' => $validated['start_time'],
             'end_time' => $validated['end_time'],
             'reserved_seats' => 1,
+            'price' => $totalPrice, // ★ 確実に金額が入ります
+            'payment_type' => 'credit_card',
             'status' => 'pending_payment',
         ]);
 
-        // 2. Stripe Checkout セッションを作成
         Stripe::setApiKey(config('services.stripe.secret') ?? env('STRIPE_SECRET'));
+
+        $start = Carbon::parse($validated['start_time']);
+        $end = Carbon::parse($validated['end_time']);
 
         $checkoutSession = StripeSession::create([
             'payment_method_types' => ['card'],
@@ -107,36 +139,38 @@ class ReservationController extends Controller
             'cancel_url' => route('reservations.cancel', ['id' => $reservation->id]),
         ]);
 
-        // 3. Stripe 決済画面へリダイレクト
         return redirect()->away($checkoutSession->url);
     }
 
     /**
-     * 決済成功時のコールバック
+     * 決済成功時のコールバック（クレカ用）
      */
     public function success(Request $request, $id)
     {
         $reservation = Reservation::where('user_id', $request->user()->id)->findOrFail($id);
 
-        // ステータスを「予約確定 (confirmed)」に変更
-        $reservation->status = 'confirmed';
-        $reservation->save();
+        // まだ確定前（pending_payment）であればステータスを更新＆メール送信
+        if ($reservation->status === 'pending_payment') {
+            $reservation->status = 'confirmed';
+            $reservation->save();
 
-        // 予約完了メールの送信
-        Mail::to($request->user())->send(new ReservationConfirmedMail($reservation));
+            Mail::to($request->user())->send(new ReservationConfirmedMail($reservation));
+        }
 
         return view('reservations.success', compact('reservation'));
     }
 
     /**
-     * 決済キャンセル時のコールバック
+     * 決済キャンセル時のコールバック（クレカ用）
      */
     public function cancel(Request $request, $id)
     {
         $reservation = Reservation::where('user_id', $request->user()->id)->findOrFail($id);
 
-        // 決済未完了のため仮予約を削除
-        $reservation->delete();
+        // 決済未完了の場合のみ仮予約を削除
+        if ($reservation->status === 'pending_payment') {
+            $reservation->delete();
+        }
 
         return redirect()->route('home')->with('error', '決済がキャンセルされました。');
     }

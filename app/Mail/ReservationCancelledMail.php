@@ -19,8 +19,15 @@ class ReservationCancelledMail extends Mailable
 
     public function envelope(): Envelope
     {
+        // ★ 決済方法に応じて件名を切り替える
+        $subject = match ($this->reservation->payment_type) {
+            'onsite' => '【Co-Space Link】ご予約キャンセルのお知らせ（現地払い）',
+            'free' => '【Co-Space Link】ご予約キャンセルのお知らせ',
+            default => '【Co-Space Link】ご予約キャンセル・返金手続きのお知らせ',
+        };
+
         return new Envelope(
-            subject: '【Co-Space Link】予約がキャンセルされました',
+            subject: $subject,
         );
     }
 

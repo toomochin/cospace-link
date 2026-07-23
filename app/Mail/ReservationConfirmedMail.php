@@ -19,8 +19,15 @@ class ReservationConfirmedMail extends Mailable
 
     public function envelope(): Envelope
     {
+        // ★ 決済方法に応じて件名を切り替える
+        $subject = match ($this->reservation->payment_type) {
+            'onsite' => '【Co-Space Link】ご予約完了のお知らせ（現地払い）',
+            'free' => '【Co-Space Link】ご予約完了のお知らせ',
+            default => '【Co-Space Link】ご予約・決済完了のお知らせ',
+        };
+
         return new Envelope(
-            subject: '【Co-Space Link】予約が完了しました',
+            subject: $subject,
         );
     }
 

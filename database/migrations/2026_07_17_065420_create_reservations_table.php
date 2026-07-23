@@ -17,7 +17,9 @@ return new class extends Migration {
             $table->dateTime('start_time');
             $table->dateTime('end_time');
             $table->integer('reserved_seats')->default(1);
-            $table->string('status')->default('pending_payment'); // 決済待ちで作成
+            $table->integer('price')->default(0); // 利用料金
+            $table->string('payment_type')->default('credit_card'); // credit_card, onsite, free
+            $table->string('status')->default('pending_payment'); // pending_payment, confirmed, cancelled
             $table->timestamps();
 
             // 重複チェックのSQLを高速化するためのインデックス

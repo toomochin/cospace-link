@@ -15,9 +15,25 @@
         @forelse ($reservations as $reservation)
             <div class="reservation-card">
                 <div>
+                    {{-- 予約ステータスバッジ --}}
                     <span class="user-badge {{ $reservation->status === 'confirmed' ? 'user-badge-green' : 'user-badge-gray' }}" style="margin-bottom: 8px;">
                         {{ $reservation->status === 'confirmed' ? '予約確定' : 'キャンセル済み' }}
                     </span>
+
+                    {{-- ★ お支払い方法バッジの追加 --}}
+                    @if ($reservation->payment_type === 'onsite')
+                        <span class="user-badge" style="background-color: #fef3c7; color: #92400e; margin-bottom: 8px;">
+                            現地払い
+                        </span>
+                    @elseif ($reservation->payment_type === 'free')
+                        <span class="user-badge" style="background-color: #dbeafe; color: #1e40af; margin-bottom: 8px;">
+                            無料
+                        </span>
+                    @else
+                        <span class="user-badge" style="background-color: #e0f2fe; color: #0369a1; margin-bottom: 8px;">
+                            クレジットカード（決済済）
+                        </span>
+                    @endif
 
                     {{-- 施設名 --}}
                     <h3 class="reservation-card-title">
@@ -29,6 +45,12 @@
                         <strong>利用日時:</strong>
                         {{ \Carbon\Carbon::parse($reservation->start_time)->format('Y年m月d日(D) H:i') }} 〜
                         {{ \Carbon\Carbon::parse($reservation->end_time)->format('H:i') }}
+                    </p>
+
+                    {{-- ★ 利用料金の表示追加 --}}
+                    <p class="reservation-card-info" style="margin-top: 4px;">
+                        <strong>ご利用料金:</strong>
+                        ¥{{ number_format($reservation->price) }}
                     </p>
                 </div>
 

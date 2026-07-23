@@ -16,6 +16,8 @@ class Reservation extends Model
         'start_time',
         'end_time',
         'reserved_seats',
+        'price',
+        'payment_type',
         'status',
     ];
 
