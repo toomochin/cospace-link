@@ -9,9 +9,7 @@
                 <a href="{{ route('admin.reservations.create') }}" class="btn-primary">
                     ＋ 代理予約を登録
                 </a>
-                <a href="{{ route('admin.facilities.index') }}" class="link-secondary">
-                    &larr; 施設管理に戻る
-                </a>
+                <a href="{{ route('admin.dashboard') }}" class="link-secondary">&larr; ダッシュボードに戻る</a>
             </div>
         </div>
 

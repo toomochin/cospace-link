@@ -9,9 +9,7 @@
                 <a href="{{ route('admin.facilities.create') }}" class="btn-primary">
                     ＋ 新規施設登録
                 </a>
-                <a href="{{ route('admin.reservations.index') }}" class="btn-secondary">
-                    全予約一覧を見る
-                </a>
+                <a href="{{ route('admin.dashboard') }}" class="link-secondary" style="margin-right: 10px;">&larr; ダッシュボードに戻る</a>
             </div>
         </div>
 

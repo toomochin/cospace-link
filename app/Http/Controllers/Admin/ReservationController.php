@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 class ReservationController extends Controller
 {
     /**
-     * 管理者向け全ユーザー予約一覧表示（FN031）
+     * 管理者向け全ユーザー予約一覧表示
      */
     public function index()
     {
@@ -54,6 +54,7 @@ class ReservationController extends Controller
             'start_time' => ['required', 'date_format:H:i'],
             'duration' => ['required', 'integer', 'min:1', 'max:12'], // 30分単位のコマ数
             'reserved_seats' => ['required', 'integer', 'min:1'],
+            'payment_type' => ['required', 'in:stripe,local,free'], // ★ 現地払い・無料対応の選択を追加
         ], [
             'user_id.required' => '対象の会員を選択してください。',
             'facility_id.required' => '対象の施設を選択してください。',
@@ -62,6 +63,7 @@ class ReservationController extends Controller
             'start_time.required' => '開始時間を選択してください。',
             'duration.required' => '利用時間を選択してください。',
             'reserved_seats.required' => '人数を選択してください。',
+            'payment_type.required' => '支払方法を選択してください。',
         ]);
 
         $facility = Facility::findOrFail($request->facility_id);
@@ -80,7 +82,7 @@ class ReservationController extends Controller
         // 重複予約（予約の重複判定）
         $existingReservationsCount = Reservation::where('reservable_type', Facility::class)
             ->where('reservable_id', $facility->id)
-            ->where('status', '!=', 'canceled')
+            ->whereNotIn('status', ['cancelled', 'canceled'])
             ->where(function ($query) use ($startDateTime, $endDateTime) {
                 $query->where('start_time', '<', $endDateTime)
                     ->where('end_time', '>', $startDateTime);
@@ -96,7 +98,7 @@ class ReservationController extends Controller
         if ($facility->type === 'area') {
             $alreadyReservedSeats = Reservation::where('reservable_type', Facility::class)
                 ->where('reservable_id', $facility->id)
-                ->where('status', '!=', 'canceled')
+                ->whereNotIn('status', ['cancelled', 'canceled'])
                 ->where(function ($query) use ($startDateTime, $endDateTime) {
                     $query->where('start_time', '<', $endDateTime)
                         ->where('end_time', '>', $startDateTime);
@@ -111,7 +113,7 @@ class ReservationController extends Controller
             }
         }
 
-        // 代理予約の作成（クレジットカード決済前提のため status は confirmed）
+        // 代理予約の作成
         Reservation::create([
             'user_id' => $request->user_id,
             'reservable_type' => Facility::class,
@@ -119,7 +121,8 @@ class ReservationController extends Controller
             'start_time' => $startDateTime,
             'end_time' => $endDateTime,
             'reserved_seats' => $request->reserved_seats,
-            'status' => 'confirmed', // 決済完了扱い
+            'status' => 'confirmed', // 代理予約は即時確定扱い
+            'payment_type' => $request->payment_type, // ★ 選択された支払方法を保存
         ]);
 
         return redirect()->route('admin.reservations.index')->with('status', '代理予約を登録しました。');

@@ -29,17 +29,18 @@
                 </a>
 
                 @auth
-                    {{-- 管理者ユーザーだけに表示 --}}
-                    @if(auth()->user()->is_admin)
-                        <a href="{{ route('admin.facilities.index') }}" class="nav-link-admin">
-                            ⚙️ 管理画面
-                        </a>
-                    @endif
-
                     {{-- ログイン中の表示 --}}
                     <a href="{{ route('reservations.index') }}" class="nav-link">
                         マイページ（予約履歴）
                     </a>
+
+                                        {{-- 管理者ユーザーだけに表示 --}}
+                    @if(auth()->user()->is_admin)
+                        {{-- ★ ここを admin.facilities.index から admin.dashboard に変更 --}}
+                        <a href="{{ route('admin.dashboard') }}" class="nav-link-admin">
+                            ⚙️ 管理画面
+                        </a>
+                    @endif
 
                     <div class="nav-user-group">
                         {{-- プロフィール編集へのリンク（画像アイコン ＋ ユーザー名） --}}

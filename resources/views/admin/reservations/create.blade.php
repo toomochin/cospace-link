@@ -79,10 +79,20 @@
             </div>
 
             {{-- 利用人数 --}}
-            <div class="form-group" style="margin-bottom: 25px;">
+            <div class="form-group">
                 <label class="form-label">利用人数 (名)</label>
                 <input type="number" name="reserved_seats" value="{{ old('reserved_seats', 1) }}" min="1"
                     class="form-control {{ $errors->has('reserved_seats') ? 'is-invalid' : '' }}">
+            </div>
+
+            {{-- ★ 支払方法選択（新規追加） --}}
+            <div class="form-group" style="margin-bottom: 25px;">
+                <label class="form-label">支払方法</label>
+                <select name="payment_type" class="form-control {{ $errors->has('payment_type') ? 'is-invalid' : '' }}">
+                    <option value="local" {{ old('payment_type', 'local') === 'local' ? 'selected' : '' }}>現地支払い</option>
+                    <option value="free" {{ old('payment_type') === 'free' ? 'selected' : '' }}>無料対応</option>
+                    <option value="stripe" {{ old('payment_type') === 'stripe' ? 'selected' : '' }}>クレジットカード（Stripe済）</option>
+                </select>
             </div>
 
             {{-- アクションボタン --}}

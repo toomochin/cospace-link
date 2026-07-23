@@ -7,6 +7,8 @@ use App\Http\Controllers\ReservationController;
 use App\Http\Controllers\Admin\FacilityController as AdminFacilityController;
 use App\Http\Controllers\Admin\ReservationController as AdminReservationController;
 use App\Http\Middleware\AdminMiddleware;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\UserController as AdminUserController;
 
 // 1. トップ画面（施設一覧）
 Route::get('/', [FacilityController::class, 'index'])->name('home');
@@ -45,6 +47,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 // 5. 管理者専用ルート
 Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admin.')->group(function () {
+    // 管理者ダッシュボード
+    Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
+
     // 施設管理（CRUD）
     Route::get('/facilities', [AdminFacilityController::class, 'index'])->name('facilities.index');
     Route::get('/facilities/create', [AdminFacilityController::class, 'create'])->name('facilities.create');
@@ -58,4 +63,8 @@ Route::middleware(['auth', AdminMiddleware::class])->prefix('admin')->name('admi
     // ★ 代理予約機能を追加
     Route::get('/reservations/create', [AdminReservationController::class, 'create'])->name('reservations.create');
     Route::post('/reservations', [AdminReservationController::class, 'store'])->name('reservations.store');
+
+    // 会員管理機能
+    Route::get('/users', [AdminUserController::class, 'index'])->name('users.index');
+    Route::patch('/users/{user}/toggle-status', [AdminUserController::class, 'toggleStatus'])->name('users.toggle-status');
 });
