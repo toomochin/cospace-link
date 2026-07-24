@@ -1,58 +1,164 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# CoSpace Link（コワーキングスペース・施設予約システム）
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Laravelで作成したコワーキングスペースおよび施設予約アプリケーションです。空き状況の確認からオンライン決済（Stripe）/現地払いでの予約、マイページでの予約管理、さらに管理者による施設・予約・会員の一括管理機能を利用できます。
 
-## About Laravel
+## 主な機能
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- ユーザー登録・ログイン・メール認証
+- ログイン時のロール別自動リダイレクト（一般ユーザー: トップ画面 / 管理者: ダッシュボード）
+- 施設一覧・詳細表示および空き状況カレンダーの閲覧（30分単位での重複チェック）
+- 予約手続き（利用日時の指定、現地払いおよびStripeによるクレジットカード決済対応）
+- 予約確定・予約キャンセル時の自動メール通知機能
+- マイページで予約履歴の確認およびキャンセル処理
+- 管理者ダッシュボード（全予約の確認、代理予約の作成、施設情報のCRUD・画像管理、会員の有効/無効切り替え）
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 使用技術
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- PHP 8.x / Laravel 11.x
+- MySQL 8.0
+- Nginx 1.21
+- Laravel Fortify
+- Stripe API (PHP SDK)
+- Docker Compose / Laravel Sail
+- Mailpit（開発用メール受信）
 
-## Learning Laravel
+## 環境構築
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Docker ビルド
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+1. git clone git@github.com:toomochin/cospace-link.git
+2. cd cospace-link
+3. ./vendor/bin/sail up -d --build
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+Laravel 環境構築
 
-## Agentic Development
+1. ./vendor/bin/sail exec laravel.test bash
+2. composer install
+3. cp .env.example .env
+4. .env ファイルの変更
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+```
+DB_HOST=mysql
+DB_DATABASE=cospace_link
+DB_USERNAME=sail
+DB_PASSWORD=password
+MAIL_FROM_ADDRESS=admin@example.com
 
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+【Stripe決済を使用する場合、最下部に以下を追記】
+STRIPE_KEY=your_stripe_publishable_key_here
+STRIPE_SECRET=your_stripe_secret_key_here
+※ここを自分のStripeのキーに差し替えてください
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+5. php artisan key:generate
+6. php artisan migrate --seed
+7. php artisan storage:link
+8. php artisan test
 
-## Contributing
+## メール認証
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+開発環境ではメール確認用に Mailpit を使用しています。`.env` を次のように設定してください。
 
-## Code of Conduct
+```dotenv
+MAIL_MAILER=smtp
+MAIL_HOST=mailpit
+MAIL_PORT=1025
+MAIL_FROM_ADDRESS=admin@example.com
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+会員登録時に送信される認証メールおよび予約確定・キャンセルメールは、[Mailpit](http://localhost:8025) で確認できます。
 
-## Security Vulnerabilities
+## データベース概要
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+| テーブル       | 用途                                                                             |
+| -------------- | -------------------------------------------------------------------------------- |
+| `users`        | ユーザー情報および管理者フラグ（is_admin）、アカウント状態                       |
+| `facilities`   | 施設情報（施設名、説明、収容人数、30分あたりの料金、画像パス、公開ステータス）   |
+| `reservations` | 施設予約情報（開始・終了日時、利用人数、決済合計金額、決済方法、予約ステータス） |
 
-## License
+## ER図
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+erDiagram
+users ||--o{ reservations : "作成する"
+facilities ||--o{ reservations : "予約される"
+
+    users {
+        bigint id PK
+        string name
+        string email
+        string password
+        timestamp email_verified_at
+        boolean is_admin "管理者フラグ"
+        boolean is_active "アカウント状態"
+    }
+
+    facilities {
+        bigint id PK
+        string name
+        text description
+        integer capacity "収容人数"
+        integer price_per_30min "30分単価"
+        string image_path
+        boolean is_active "公開ステータス"
+    }
+
+    reservations {
+        bigint id PK
+        bigint user_id FK "予約ユーザー"
+        bigint reservable_id "予約対象ID (Facility ID)"
+        string reservable_type "予約対象モデル (App\\Models\\Facility)"
+        datetime start_time
+        datetime end_time
+        integer reserved_seats
+        integer price "決済金額"
+        string payment_type "credit_card / onsite"
+        string status "confirmed / pending_payment / cancelled"
+    }
+
+## 初期アカウント
+
+`make init` または `make fresh` 実行時に、以下のアカウントが作成されます。パスワードはすべて `password` です。
+
+| 役割 / アカウント名       | メールアドレス    | パスワード | 初期状態                         |
+| ------------------------- | ----------------- | ---------- | -------------------------------- |
+| 管理者 / システム管理者   | admin@example.com | password   | 管理者権限あり (is_admin = true) |
+| 一般ユーザー / テスト太郎 | user@example.com  | password   | 一般ユーザー権限                 |
+
+## アプリケーションを開く
+
+| サービス         | URL                   |
+| ---------------- | --------------------- |
+| アプリケーション | http://localhost      |
+| phpMyAdmin       | http://localhost:8080 |
+| Mailpit          | http://localhost:8025 |
+
+Mailpitでは、会員登録時のメール認証通知や予約確定・キャンセル通知メールを確認できます。
+
+## テストの実行
+
+PHP コンテナ内または Laravel Sail コマンドでテストを実行します。
+PHPUnit（In-Memory SQLite）を使用してテストを実行します。事前準備は不要です。
+
+```bash
+# テスト用データベースの作成（初回のみ）
+docker-compose exec mysql mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS test_database;"
+# パスワードは root を入力
+
+# テストの実行
+./vendor/bin/sail artisan test
+```
+
+## ディレクトリ構成
+
+```text
+.
+├── app/                  # コントローラー、モデル、ミドルウェア、レスポンス等
+│   ├── Http/Controllers/ # 一般用および管理者用（Admin/）コントローラー
+│   ├── Models/           # User, Facility, Reservation モデル
+│   └── Providers/        # FortifyServiceProvider 等
+├── database/             # マイグレーション、シーダー
+├── resources/views/      # Blade テンプレート（auth/, reservations/, admin/ 等）
+├── routes/               # web.php, console.php 等
+├── tests/                # Feature / Unit テスト
+└── docker-compose.yml
+```
