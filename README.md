@@ -78,42 +78,7 @@ MAIL_FROM_ADDRESS=admin@example.com
 
 ## ER図
 
-erDiagram
-users ||--o{ reservations : "作成する"
-facilities ||--o{ reservations : "予約される"
-
-    users {
-        bigint id PK
-        string name
-        string email
-        string password
-        timestamp email_verified_at
-        boolean is_admin "管理者フラグ"
-        boolean is_active "アカウント状態"
-    }
-
-    facilities {
-        bigint id PK
-        string name
-        text description
-        integer capacity "収容人数"
-        integer price_per_30min "30分単価"
-        string image_path
-        boolean is_active "公開ステータス"
-    }
-
-    reservations {
-        bigint id PK
-        bigint user_id FK "予約ユーザー"
-        bigint reservable_id "予約対象ID (Facility ID)"
-        string reservable_type "予約対象モデル (App\\Models\\Facility)"
-        datetime start_time
-        datetime end_time
-        integer reserved_seats
-        integer price "決済金額"
-        string payment_type "credit_card / onsite"
-        string status "confirmed / pending_payment / cancelled"
-    }
+![ER図](docs/ER図.png)
 
 ## 初期アカウント
 
