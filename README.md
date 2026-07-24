@@ -140,10 +140,6 @@ PHP コンテナ内または Laravel Sail コマンドでテストを実行し�
 PHPUnit（In-Memory SQLite）を使用してテストを実行します。事前準備は不要です。
 
 ```bash
-# テスト用データベースの作成（初回のみ）
-docker-compose exec mysql mysql -u root -p -e "CREATE DATABASE IF NOT EXISTS test_database;"
-# パスワードは root を入力
-
 # テストの実行
 ./vendor/bin/sail artisan test
 ```
