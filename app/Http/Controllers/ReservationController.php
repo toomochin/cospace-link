@@ -2,16 +2,20 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ReservationStoreRequest;
+use App\Mail\ReservationCancelledMail;
+use App\Mail\ReservationConfirmedMail;
 use App\Models\Facility;
 use App\Models\Reservation;
-use Illuminate\Http\Request;
+use App\Services\StripeRefundService;
 use Carbon\Carbon;
-use Stripe\Stripe;
-use Stripe\Checkout\Session as StripeSession;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\ReservationConfirmedMail;
-use App\Mail\ReservationCancelledMail;
-use App\Http\Requests\ReservationStoreRequest;
+use Illuminate\Validation\ValidationException;
+use Stripe\Checkout\Session as StripeSession;
+use Stripe\Stripe;
+use Throwable;
 
 class ReservationController extends Controller
 {
@@ -132,7 +136,7 @@ class ReservationController extends Controller
                         'unit_amount' => $totalPrice,
                     ],
                     'quantity' => 1,
-                ]
+                ],
             ],
             'mode' => 'payment',
             'success_url' => route('reservations.success', ['id' => $reservation->id]),
@@ -149,12 +153,11 @@ class ReservationController extends Controller
     {
         $reservation = Reservation::where('user_id', $request->user()->id)->findOrFail($id);
 
-        // まだ確定前（pending_payment）であればステータスを更新＆メール送信
         if ($reservation->status === 'pending_payment') {
-            $reservation->status = 'confirmed';
-            $reservation->save();
-
-            Mail::to($request->user())->send(new ReservationConfirmedMail($reservation));
+            return redirect()->route('reservations.index')->with(
+                'status',
+                '決済結果を確認しています。しばらくしてから予約状況をご確認ください。',
+            );
         }
 
         return view('reservations.success', compact('reservation'));
@@ -192,13 +195,70 @@ class ReservationController extends Controller
     /**
      * キャンセル処理
      */
-    public function destroy(Request $request, $id)
+    public function destroy(Request $request, $id, StripeRefundService $refundService)
     {
         $reservation = Reservation::where('user_id', $request->user()->id)
             ->findOrFail($id);
 
-        $reservation->status = 'cancelled';
-        $reservation->save();
+        if ($reservation->status !== 'confirmed') {
+            throw ValidationException::withMessages([
+                'reservation' => '確定済みの予約のみキャンセルできます。',
+            ]);
+        }
+
+        if (now()->addHours(24)->gt($reservation->start_time)) {
+            throw ValidationException::withMessages([
+                'reservation' => 'キャンセルは利用開始時刻の24時間前まで可能です。',
+            ]);
+        }
+
+        try {
+            DB::transaction(function () use ($reservation, $refundService): void {
+                $lockedReservation = Reservation::query()->lockForUpdate()->findOrFail($reservation->id);
+
+                if ($lockedReservation->status !== 'confirmed') {
+                    throw ValidationException::withMessages([
+                        'reservation' => 'この予約はすでにキャンセルされています。',
+                    ]);
+                }
+
+                if ($lockedReservation->payment_type === 'credit_card') {
+                    $payment = DB::table('payments')
+                        ->where('reservation_id', $lockedReservation->id)
+                        ->where('status', 'succeeded')
+                        ->lockForUpdate()
+                        ->first();
+
+                    if (! $payment?->stripe_payment_intent_id) {
+                        throw ValidationException::withMessages([
+                            'reservation' => '決済情報が確認できないため返金できません。',
+                        ]);
+                    }
+
+                    $refund = $refundService->create(
+                        $payment->stripe_payment_intent_id,
+                        (int) $payment->amount,
+                        $lockedReservation->id,
+                    );
+
+                    DB::table('payments')->where('id', $payment->id)->update([
+                        'stripe_refund_id' => $refund->id,
+                        'status' => 'refunded',
+                        'updated_at' => now(),
+                    ]);
+                }
+
+                $lockedReservation->update(['status' => 'cancelled']);
+            }, 3);
+        } catch (ValidationException $exception) {
+            throw $exception;
+        } catch (Throwable $exception) {
+            report($exception);
+
+            throw ValidationException::withMessages([
+                'reservation' => '返金処理に失敗しました。時間をおいて再度お試しください。',
+            ]);
+        }
 
         // キャンセル完了メールの送信
         Mail::to($request->user())->send(new ReservationCancelledMail($reservation));

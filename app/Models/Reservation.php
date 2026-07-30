@@ -9,6 +9,14 @@ class Reservation extends Model
 {
     use HasFactory;
 
+    protected function casts(): array
+    {
+        return [
+            'start_time' => 'datetime',
+            'end_time' => 'datetime',
+        ];
+    }
+
     protected $fillable = [
         'user_id',
         'reservable_id',
