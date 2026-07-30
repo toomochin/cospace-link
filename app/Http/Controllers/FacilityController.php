@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\FacilitySearchRequest;
 use App\Models\Facility;
 use App\Models\Reservation;
 use Carbon\Carbon;
-use Illuminate\Http\Request;
 
 class FacilityController extends Controller
 {
     /**
      * 施設一覧（トップ画面）表示
      */
-    public function index(Request $request)
+    public function index(FacilitySearchRequest $request)
     {
         $query = Facility::where('is_active', true);
 
@@ -23,7 +23,7 @@ class FacilityController extends Controller
 
         // 施設名・説明文・設備備品のあいまい検索
         if ($request->filled('keyword')) {
-            $keyword = '%' . $request->keyword . '%';
+            $keyword = '%'.$request->keyword.'%';
             $query->where(function ($q) use ($keyword) {
                 $q->where('name', 'like', $keyword)
                     ->orWhere('description', 'like', $keyword)
@@ -91,7 +91,7 @@ class FacilityController extends Controller
                 }
 
                 // 予約可能フラグ
-                $isAvailable = !$isPast && !$isReserved;
+                $isAvailable = ! $isPast && ! $isReserved;
 
                 $timeSlots[] = [
                     'start' => $slotTime->format('H:i'),
@@ -106,7 +106,7 @@ class FacilityController extends Controller
 
             $calendarDays[] = [
                 'date' => $date->format('Y-m-d'),
-                'display' => $date->format('m/d') . '(' . $this->getJapaneseDayOfWeek($date->dayOfWeek) . ')',
+                'display' => $date->format('m/d').'('.$this->getJapaneseDayOfWeek($date->dayOfWeek).')',
                 'time_slots' => $timeSlots,
             ];
         }
@@ -120,6 +120,7 @@ class FacilityController extends Controller
     private function getJapaneseDayOfWeek($dayOfWeek)
     {
         $days = ['日', '月', '火', '水', '木', '金', '土'];
+
         return $days[$dayOfWeek] ?? '';
     }
 }

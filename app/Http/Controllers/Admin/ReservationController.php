@@ -5,22 +5,96 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Facility;
 use App\Models\Reservation;
+use App\Models\Shop;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReservationController extends Controller
 {
     /**
      * 管理者向け全ユーザー予約一覧表示
      */
-    public function index()
+    public function index(Request $request)
     {
-        $reservations = Reservation::with(['user', 'reservable'])
-            ->orderBy('start_time', 'desc')
-            ->paginate(15);
+        $filters = $this->filters($request);
+        $query = $this->reservationQuery($filters);
+        $confirmedSales = (clone $query)->where('reservations.status', 'confirmed')->sum('price');
+        $refundedAmount = $this->refundedQuery($filters)->sum('payments.amount');
+        $reservations = $query
+            ->with(['user', 'reservable.shop'])
+            ->orderByDesc('reservations.start_time')
+            ->paginate(20)
+            ->withQueryString();
+        $shops = Shop::query()->orderBy('name')->get(['id', 'name']);
 
-        return view('admin.reservations.index', compact('reservations'));
+        return view('admin.reservations.index', compact(
+            'reservations', 'shops', 'filters', 'confirmedSales', 'refundedAmount'
+        ));
+    }
+
+    public function export(Request $request): StreamedResponse
+    {
+        $filters = $this->filters($request);
+        $reservations = $this->reservationQuery($filters)
+            ->leftJoin('payments', 'payments.reservation_id', '=', 'reservations.id')
+            ->select([
+                'reservations.*', 'payments.status as payment_status',
+                'payments.amount as payment_amount', 'payments.stripe_refund_id',
+            ])
+            ->with(['user', 'reservable.shop'])
+            ->orderByDesc('reservations.start_time')
+            ->get();
+
+        return response()->streamDownload(function () use ($reservations): void {
+            $output = fopen('php://output', 'w');
+            fwrite($output, pack('C*', 0xEF, 0xBB, 0xBF));
+            fputcsv($output, [
+                '予約ID', '店舗名', '施設名', '利用開始', '利用終了', '利用者名',
+                '利用者メール', '人数', '予約金額', '支払方法', '予約状態',
+                '決済状態', '返金額', '返金ID',
+            ]);
+
+            foreach ($reservations as $reservation) {
+                $status = match ($reservation->status) {
+                    'pending_payment' => '決済確認中',
+                    'confirmed' => '予約確定',
+                    'cancelled', 'canceled' => 'キャンセル済み',
+                    default => $reservation->status,
+                };
+                $paymentStatus = match (true) {
+                    $reservation->payment_status === 'refunded' => '返金済み',
+                    $reservation->payment_status === 'succeeded' => '決済済み',
+                    $reservation->payment_type === 'onsite' => '現地払い',
+                    default => '決済確認中',
+                };
+
+                fputcsv($output, [
+                    $reservation->id,
+                    $reservation->reservable?->shop?->name,
+                    $reservation->reservable?->name,
+                    $reservation->start_time->format('Y-m-d H:i'),
+                    $reservation->end_time->format('Y-m-d H:i'),
+                    $reservation->user?->name,
+                    $reservation->user?->email,
+                    $reservation->reserved_seats,
+                    $reservation->price,
+                    $reservation->payment_type === 'onsite' ? '現地払い' : 'クレジットカード',
+                    $status,
+                    $paymentStatus,
+                    $reservation->payment_status === 'refunded' ? $reservation->payment_amount : 0,
+                    $reservation->stripe_refund_id,
+                ]);
+            }
+
+            fclose($output);
+        }, 'all-shop-reservations-'.now()->format('Ymd').'.csv', [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+        ]);
     }
 
     /**
@@ -76,7 +150,7 @@ class ReservationController extends Controller
         }
 
         // 開始日時と終了日時の算出
-        $startDateTime = Carbon::parse($request->date . ' ' . $request->start_time);
+        $startDateTime = Carbon::parse($request->date.' '.$request->start_time);
         $endDateTime = (clone $startDateTime)->addMinutes($request->duration * 30);
 
         // 重複予約（予約の重複判定）
@@ -107,6 +181,7 @@ class ReservationController extends Controller
 
             if (($alreadyReservedSeats + $request->reserved_seats) > $facility->capacity) {
                 $available = $facility->capacity - $alreadyReservedSeats;
+
                 return back()->withInput()->withErrors([
                     'reserved_seats' => "指定の時間帯の残席数は {$available} 名分です。",
                 ]);
@@ -126,5 +201,41 @@ class ReservationController extends Controller
         ]);
 
         return redirect()->route('admin.reservations.index')->with('status', '代理予約を登録しました。');
+    }
+
+    private function filters(Request $request): array
+    {
+        return $request->validate([
+            'shop_id' => ['nullable', 'integer', 'exists:shops,id'],
+            'date_from' => ['nullable', 'date'],
+            'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],
+            'status' => ['nullable', Rule::in(['pending_payment', 'confirmed', 'cancelled'])],
+        ]);
+    }
+
+    private function reservationQuery(array $filters): Builder
+    {
+        return Reservation::query()
+            ->whereHasMorph('reservable', [Facility::class], function ($query) use ($filters): void {
+                $query->when($filters['shop_id'] ?? null, fn ($query, $shopId) => $query->where('shop_id', $shopId));
+            })
+            ->when($filters['date_from'] ?? null, fn ($query, $date) => $query->whereDate('reservations.start_time', '>=', $date))
+            ->when($filters['date_to'] ?? null, fn ($query, $date) => $query->whereDate('reservations.start_time', '<=', $date))
+            ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('reservations.status', $status));
+    }
+
+    private function refundedQuery(array $filters)
+    {
+        return DB::table('payments')
+            ->join('reservations', 'payments.reservation_id', '=', 'reservations.id')
+            ->join('facilities', function ($join): void {
+                $join->on('reservations.reservable_id', '=', 'facilities.id')
+                    ->where('reservations.reservable_type', Facility::class);
+            })
+            ->where('payments.status', 'refunded')
+            ->when($filters['shop_id'] ?? null, fn ($query, $shopId) => $query->where('facilities.shop_id', $shopId))
+            ->when($filters['date_from'] ?? null, fn ($query, $date) => $query->whereDate('reservations.start_time', '>=', $date))
+            ->when($filters['date_to'] ?? null, fn ($query, $date) => $query->whereDate('reservations.start_time', '<=', $date))
+            ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('reservations.status', $status));
     }
 }
