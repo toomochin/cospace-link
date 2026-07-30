@@ -650,3 +650,58 @@
 .btn-toggle.activate:hover {
     background: #86efac;
 }
+
+.btn-toggle.edit {
+    background: #dbeafe;
+    color: #1d4ed8;
+    text-decoration: none;
+}
+
+.btn-toggle.edit:hover {
+    background: #bfdbfe;
+}
+
+.shop-table-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.shop-table-actions form {
+    margin: 0;
+}
+
+.admin-shops-table {
+    min-width: 760px;
+}
+
+.admin-list-card {
+    box-sizing: border-box;
+    max-width: 1000px;
+    width: 100%;
+}
+
+.owner-facilities-table,
+.owner-reservations-table {
+    min-width: 760px;
+}
+
+.owner-dashboard-table {
+    margin-bottom: 24px;
+}
+
+.admin-card form > button[type=submit] {
+    align-self: flex-start;
+    background: #2563eb;
+    color: #ffffff;
+    padding: 10px 20px;
+    border: 0;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.admin-card form > button[type=submit]:hover {
+    background: #1d4ed8;
+}

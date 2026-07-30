@@ -42,6 +42,7 @@
         <p><a href='{{ route('admin.reservations.export', array_filter($filters)) }}'>現在の条件でCSV出力</a></p>
 
         {{-- テーブル一覧 --}}
+        <div class='table-wrapper'>
         <table class="admin-table">
             <thead>
                 <tr>
@@ -82,6 +83,8 @@
                 @endforelse
             </tbody>
         </table>
+
+        </div>
 
         {{-- 横揃えページネーションエリア --}}
         <div class="admin-pagination-container">
