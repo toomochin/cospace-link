@@ -41,6 +41,8 @@ class DatabaseSeeder extends Seeder
 
         // 施設（会議室・フリーエリア）データを投入
         $this->call([
+            ShopSeeder::class,
+            PortalUserSeeder::class,
             FacilitySeeder::class,
         ]);
 
