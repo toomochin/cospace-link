@@ -42,6 +42,34 @@
         </div>
     </div>
 
+    <h3>ポータル全体の状況</h3>
+    <div class='dashboard-summary-grid'>
+        <div class='summary-card default'>
+            <div class='summary-label'>加盟店舗</div>
+            <div class='summary-value'>{{ $activeShopsCount }} / {{ $totalShopsCount }} <span class='summary-unit'>店舗掲載中</span></div>
+        </div>
+        <div class='summary-card default'>
+            <div class='summary-label'>公開施設</div>
+            <div class='summary-value'>{{ $activeFacilitiesCount }} <span class='summary-unit'>施設</span></div>
+        </div>
+        <div class='summary-card default'>
+            <div class='summary-label'>累計確定予約</div>
+            <div class='summary-value'>{{ $totalConfirmedReservationsCount }} <span class='summary-unit'>件</span></div>
+        </div>
+        <div class='summary-card success'>
+            <div class='summary-label'>累計確定売上</div>
+            <div class='summary-value'>&yen;{{ number_format($totalConfirmedSales) }}</div>
+        </div>
+        <div class='summary-card danger'>
+            <div class='summary-label'>累計返金額</div>
+            <div class='summary-value'>&yen;{{ number_format($totalRefundedAmount) }}</div>
+        </div>
+        <div class='summary-card default'>
+            <div class='summary-label'>本日の稼働施設</div>
+            <div class='summary-value'>{{ $todayOperatingFacilitiesCount }} <span class='summary-unit'>施設（{{ $todayFacilityUtilizationRate }}%）</span></div>
+        </div>
+    </div>
+
     {{-- 予約スケジュール タイムラインエリア --}}
     <h3 style="font-size: 1.25rem; font-weight: bold; margin-bottom: 15px; color: #334155;">本日の利用スケジュール (9:00 - 21:00)</h3>
     

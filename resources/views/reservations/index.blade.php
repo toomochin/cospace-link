@@ -1,6 +1,14 @@
 @extends('layouts.app')
 
 @section('content')
+    @if ($errors->any())
+        <div class='alert-error'>
+            @foreach ($errors->all() as $error)
+                <p>{{ $error }}</p>
+            @endforeach
+        </div>
+    @endif
+    <p>キャンセルは利用開始時刻の24時間前まで可能です。クレジットカード決済は全額返金されます。</p>
     <div class="user-container">
         <h2 class="user-title" style="margin-bottom: 20px;">マイページ（予約履歴）</h2>
 
@@ -17,7 +25,12 @@
                 <div>
                     {{-- 予約ステータスバッジ --}}
                     <span class="user-badge {{ $reservation->status === 'confirmed' ? 'user-badge-green' : 'user-badge-gray' }}" style="margin-bottom: 8px;">
-                        {{ $reservation->status === 'confirmed' ? '予約確定' : 'キャンセル済み' }}
+                        {{ match ($reservation->status) {
+                            'confirmed' => '予約確定',
+                            'pending_payment' => '決済確認中',
+                            'cancelled', 'canceled' => 'キャンセル済み',
+                            default => $reservation->status,
+                        } }}
                     </span>
 
                     {{-- ★ お支払い方法バッジの追加 --}}
@@ -31,7 +44,9 @@
                         </span>
                     @else
                         <span class="user-badge" style="background-color: #e0f2fe; color: #0369a1; margin-bottom: 8px;">
-                            クレジットカード（決済済）
+                            {{ $reservation->status === 'confirmed'
+                                ? 'クレジットカード（決済済）'
+                                : 'クレジットカード（決済確認中）' }}
                         </span>
                     @endif
 
@@ -56,7 +71,7 @@
 
                 <div>
                     {{-- 未来の予約かつ予約確定状態の場合のみキャンセルボタンを表示 --}}
-                    @if ($reservation->status === 'confirmed' && \Carbon\Carbon::parse($reservation->start_time)->isFuture())
+                    @if ($reservation->status === 'confirmed' && \Carbon\Carbon::parse($reservation->start_time)->greaterThanOrEqualTo(now()->addHours(24)))
                         <form action="{{ route('reservations.destroy', $reservation->id) }}" method="POST"
                             onsubmit="return confirm('本当にこの予約をキャンセルしますか？');">
                             @csrf

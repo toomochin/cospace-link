@@ -13,6 +13,34 @@
             </div>
         </div>
 
+        <form method='GET' action='{{ route('admin.reservations.index') }}'>
+            <label>店舗
+                <select name='shop_id'>
+                    <option value=''>全店舗</option>
+                    @foreach ($shops as $shop)
+                        <option value='{{ $shop->id }}' @selected((string) ($filters['shop_id'] ?? '') === (string) $shop->id)>{{ $shop->name }}</option>
+                    @endforeach
+                </select>
+            </label>
+            <label>利用日（開始）<input type='date' name='date_from' value='{{ $filters['date_from'] ?? '' }}'></label>
+            <label>利用日（終了）<input type='date' name='date_to' value='{{ $filters['date_to'] ?? '' }}'></label>
+            <label>予約状態
+                <select name='status'>
+                    <option value=''>すべて</option>
+                    <option value='pending_payment' @selected(($filters['status'] ?? '') === 'pending_payment')>決済確認中</option>
+                    <option value='confirmed' @selected(($filters['status'] ?? '') === 'confirmed')>予約確定</option>
+                    <option value='cancelled' @selected(($filters['status'] ?? '') === 'cancelled')>キャンセル済み</option>
+                </select>
+            </label>
+            <button type='submit'>絞り込む</button>
+            <a href='{{ route('admin.reservations.index') }}'>条件をクリア</a>
+        </form>
+        <p>
+            確定売上: ¥{{ number_format($confirmedSales) }} /
+            返金済み金額: ¥{{ number_format($refundedAmount) }}
+        </p>
+        <p><a href='{{ route('admin.reservations.export', array_filter($filters)) }}'>現在の条件でCSV出力</a></p>
+
         {{-- テーブル一覧 --}}
         <table class="admin-table">
             <thead>
@@ -43,7 +71,7 @@
                                 };
                             @endphp
                             <span class="badge-status {{ $statusClass }}">
-                                {{ $reservation->status === 'confirmed' ? '予約確定' : ($reservation->status === 'cancelled' ? 'キャンセル済' : '決済待ち') }}
+                                {{ $reservation->status === 'confirmed' ? '予約確定' : ($reservation->status === 'cancelled' ? 'キャンセル済' : '決済確認中') }}
                             </span>
                         </td>
                     </tr>

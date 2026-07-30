@@ -5,81 +5,94 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ config('app.name', 'Co-Space Link') }}</title>
-
-    {{-- admin.css と user.css の読み込み --}}
     <link rel="stylesheet" href="{{ asset('css/admin.css') }}?v=1.0">
     <link rel="stylesheet" href="{{ asset('css/user.css') }}?v=1.0">
+    <link rel="stylesheet" href="{{ asset('css/navigation.css') }}?v=1.0">
+    <link rel='stylesheet' href='{{ asset('css/responsive.css') }}?v=1.0'>
 </head>
 
 <body>
-
-    <!-- 共通ヘッダー -->
     <header class="site-header">
         <div class="site-header-inner">
+            <a href="{{ route('home') }}" class="site-logo">Co-Space Link</a>
 
-            <!-- ロゴ / アプリ名 -->
-            <a href="{{ route('home') }}" class="site-logo">
-                Co-Space Link
-            </a>
-
-            <!-- ナビゲーションリンク -->
-            <nav class="site-nav">
-                <a href="{{ route('home') }}" class="nav-link">
-                    施設一覧
+            <nav class="site-nav" aria-label="メインナビゲーション">
+                <a href="{{ route('home') }}" class="nav-button {{ request()->routeIs('home') ? 'active' : '' }}">
+                    施設検索
                 </a>
 
                 @auth
-                    {{-- ログイン中の表示 --}}
-                    <a href="{{ route('reservations.index') }}" class="nav-link">
-                        マイページ（予約履歴）
-                    </a>
-
-                                        {{-- 管理者ユーザーだけに表示 --}}
-                    @if(auth()->user()->is_admin)
-                        {{-- ★ ここを admin.facilities.index から admin.dashboard に変更 --}}
-                        <a href="{{ route('admin.dashboard') }}" class="nav-link-admin">
-                            ⚙️ 管理画面
+                    @if (auth()->user()->isSystemAdmin())
+                        <a href="{{ route('admin.dashboard') }}"
+                            class="nav-button nav-button-admin {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                            管理ダッシュボード
+                        </a>
+                        <a href="{{ route('admin.shops.index') }}"
+                            class="nav-button nav-button-admin {{ request()->routeIs('admin.shops.*') ? 'active' : '' }}">
+                            加盟店舗
+                        </a>
+                        <a href="{{ route('admin.facilities.index') }}"
+                            class="nav-button nav-button-admin {{ request()->routeIs('admin.facilities.*') ? 'active' : '' }}">
+                            全施設
+                        </a>
+                        <a href="{{ route('admin.reservations.index') }}"
+                            class="nav-button nav-button-admin {{ request()->routeIs('admin.reservations.*') ? 'active' : '' }}">
+                            全予約
+                        </a>
+                        <a href="{{ route('admin.users.index') }}"
+                            class="nav-button nav-button-admin {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                            会員
+                        </a>
+                    @elseif (auth()->user()->isShopOwner())
+                        <a href="{{ route('owner.dashboard') }}"
+                            class="nav-button nav-button-owner {{ request()->routeIs('owner.dashboard') ? 'active' : '' }}">
+                            店舗ダッシュボード
+                        </a>
+                        <a href="{{ route('owner.facilities.index') }}"
+                            class="nav-button nav-button-owner {{ request()->routeIs('owner.facilities.*') ? 'active' : '' }}">
+                            施設管理
+                        </a>
+                        <a href="{{ route('owner.reservations.index') }}"
+                            class="nav-button nav-button-owner {{ request()->routeIs('owner.reservations.*') ? 'active' : '' }}">
+                            予約・売上
+                        </a>
+                        <a href="{{ route('owner.shop.edit') }}"
+                            class="nav-button nav-button-owner {{ request()->routeIs('owner.shop.*') ? 'active' : '' }}">
+                            店舗情報
+                        </a>
+                    @else
+                        <a href="{{ route('reservations.index') }}"
+                            class="nav-button {{ request()->routeIs('reservations.index') ? 'active' : '' }}">
+                            予約履歴
                         </a>
                     @endif
 
                     <div class="nav-user-group">
-                        {{-- プロフィール編集へのリンク（画像アイコン ＋ ユーザー名） --}}
                         <a href="{{ route('profile.edit') }}" class="nav-profile-link" title="プロフィール編集">
-                            @if (Auth::user()->profile_image_path)
-                                <img src="{{ asset('storage/' . Auth::user()->profile_image_path) }}" alt="アイコン" class="nav-avatar-img">
+                            @if (auth()->user()->profile_image_path)
+                                <img src="{{ asset('storage/'.auth()->user()->profile_image_path) }}"
+                                    alt="" class="nav-avatar-img">
                             @else
-                                <span style="font-size: 1.1em;">👤</span>
+                                <span aria-hidden="true">👤</span>
                             @endif
-
-                            <span style="font-weight: 500;">{{ Auth::user()->name }} さん</span>
+                            <span>{{ auth()->user()->name }}</span>
                         </a>
-
-                        <!-- ログアウトフォーム -->
-                        <form method="POST" action="{{ route('logout') }}" style="margin: 0;">
+                        <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button type="submit" class="btn-logout">
-                                ログアウト
-                            </button>
+                            <button type="submit" class="btn-logout">ログアウト</button>
                         </form>
                     </div>
                 @else
-                    {{-- 未ログインの表示 --}}
-                    <a href="{{ route('login') }}" class="nav-link">
-                        ログイン
-                    </a>
-                    <a href="{{ route('register') }}" class="btn-user-primary" style="padding: 6px 12px; font-size: 0.85em;">
-                        会員登録
-                    </a>
+                    <a href="{{ route('login') }}" class="nav-button">ログイン</a>
+                    <a href="{{ route('register') }}" class="btn-user-primary">会員登録</a>
                 @endauth
             </nav>
         </div>
     </header>
 
-    <!-- メインコンテンツ -->
     <main class="main-content">
         @yield('content')
     </main>
-
 </body>
 
 </html>

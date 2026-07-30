@@ -2,89 +2,73 @@
 
 @section('content')
     <div class="user-container">
-        <h2 class="user-title" style="margin-bottom: 20px;">施設一覧</h2>
+        <h2 class="user-title" style="margin-bottom: 20px;">施設横断検索</h2>
 
-        @if (session('status'))
-            <div class="alert-success">
-                {{ session('status') }}
+        @if ($errors->any())
+            <div class="alert-error">
+                @foreach ($errors->all() as $error)
+                    <div>{{ $error }}</div>
+                @endforeach
             </div>
         @endif
 
-        {{-- 検索・絞り込みフォーム --}}
         <form action="{{ route('home') }}" method="GET" class="filter-form">
-            <input type="text" name="keyword" value="{{ request('keyword') }}" placeholder="施設名・設備・説明文で検索"
+            <input type="text" name="area" value="{{ request('area') }}" placeholder="エリア（渋谷・梅田など）"
+                class="form-control">
+            <input type="text" name="keyword" value="{{ request('keyword') }}" placeholder="店舗名・施設名・特徴"
                 class="form-control filter-input-keyword">
+            <input type="date" name="date" value="{{ request('date') }}" min="{{ now()->format('Y-m-d') }}"
+                class="form-control">
+            <input type="time" name="start_time" value="{{ request('start_time') }}" step="1800" class="form-control">
+            <input type="time" name="end_time" value="{{ request('end_time') }}" step="1800" class="form-control">
 
-            <select name="type" class="form-control" style="width: auto;">
+            <select name="type" class="form-control">
                 <option value="">すべての種別</option>
-                <option value="meeting_room" {{ request('type') === 'meeting_room' ? 'selected' : '' }}>会議室</option>
-                <option value="area" {{ request('type') === 'area' ? 'selected' : '' }}>エリア（席）</option>
+                <option value="meeting_room" @selected(request('type') === 'meeting_room')>会議室</option>
+                <option value="area" @selected(request('type') === 'area')>エリア（席）</option>
             </select>
 
-            <button type="submit" class="btn-user-dark" style="width: auto; padding: 10px 20px;">
-                検索
-            </button>
+            @foreach (['Wi-Fi', '電源', 'Web会議ブース可', 'モニター', 'フリードリンク'] as $amenity)
+                <label>
+                    <input type="checkbox" name="amenities[]" value="{{ $amenity }}"
+                        @checked(in_array($amenity, request('amenities', []), true))>
+                    {{ $amenity }}
+                </label>
+            @endforeach
+
+            <button type="submit" class="btn-user-dark" style="width: auto; padding: 10px 20px;">検索</button>
         </form>
 
-        <!-- 施設タイプ別絞り込みタブ -->
-        <div class="filter-tab-container">
-            <a href="{{ route('home', array_merge(request()->query(), ['type' => null])) }}"
-                class="filter-tab-item {{ !request('type') ? 'active' : '' }}">
-                すべて
-            </a>
-
-            <a href="{{ route('home', array_merge(request()->query(), ['type' => 'meeting_room'])) }}"
-                class="filter-tab-item {{ request('type') === 'meeting_room' ? 'active' : '' }}">
-                🚪 会議室・個室
-            </a>
-
-            <a href="{{ route('home', array_merge(request()->query(), ['type' => 'area'])) }}"
-                class="filter-tab-item {{ request('type') === 'area' ? 'active' : '' }}">
-                🪑 フリーデスク・エリア
-            </a>
-        </div>
-
-        {{-- 施設カード一覧 --}}
         <div class="facility-grid">
             @forelse ($facilities as $facility)
                 <div class="facility-card">
                     <div class="facility-card-body facility-card-inner">
                         <div>
-                            <span class="user-badge user-badge-gray" style="margin-bottom: 8px;">
+                            <span class="user-badge user-badge-gray">
                                 {{ $facility->type === 'meeting_room' ? '会議室' : 'エリア席' }}
                             </span>
-                            <h3 style="margin: 0 0 10px 0; font-size: 1.15em; color: #1f2937;">{{ $facility->name }}</h3>
-                            <p style="color: #6b7280; font-size: 0.9em; margin-bottom: 10px; line-height: 1.4;">
-                                {{ $facility->description }}
+                            <p style="margin: 8px 0 4px; color: #4b5563;">
+                                {{ $facility->shop->name }} ／ {{ $facility->shop->area_name }}
                             </p>
-
+                            <h3 style="margin: 0 0 10px; font-size: 1.15em;">{{ $facility->name }}</h3>
+                            <p style="color: #6b7280;">{{ $facility->description }}</p>
                             @if ($facility->equipment)
-                                <div class="facility-equipment-box" style="margin-top: 8px; font-size: 0.85em;">
-                                    <strong>設備:</strong> {{ $facility->equipment }}
-                                </div>
+                                <div class="facility-equipment-box"><strong>設備:</strong> {{ $facility->equipment }}</div>
                             @endif
                         </div>
-
                         <div>
-                            <div class="facility-card-footer">
-                                <p style="margin: 0 0 5px 0; font-size: 0.9em; color: #4b5563;">
-                                    定員: {{ $facility->capacity }}名
-                                </p>
-                                <p class="facility-card-price">
-                                    ¥{{ number_format($facility->price_per_30min) }}
-                                    <span class="facility-meta-unit">/ 30分</span>
-                                </p>
-                            </div>
-
-                            {{-- 詳細画面へのリンクボタン --}}
-                            <a href="{{ route('facilities.show', $facility->id) }}" class="btn-user-primary" style="display: block; text-align: center;">
-                                詳細・予約
-                            </a>
+                            <p>定員: {{ $facility->capacity }}名</p>
+                            <p class="facility-card-price">
+                                ¥{{ number_format($facility->price_per_30min) }}
+                                <span class="facility-meta-unit">/ 30分</span>
+                            </p>
+                            <a href="{{ route('facilities.show', $facility->id) }}" class="btn-user-primary"
+                                style="display: block; text-align: center;">詳細・予約</a>
                         </div>
                     </div>
                 </div>
             @empty
-                <p class="text-empty" style="grid-column: 1 / -1;">該当する施設が見つかりませんでした。</p>
+                <p class="text-empty" style="grid-column: 1 / -1;">条件に合う空き施設が見つかりませんでした。</p>
             @endforelse
         </div>
     </div>
