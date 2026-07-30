@@ -18,6 +18,7 @@ class AdminFacilityTest extends TestCase
     {
         return User::factory()->create([
             'is_admin' => true, // または AdminMiddleware が参照している管理者判定フラグ・権限
+            'role' => 'system_admin',
             'email_verified_at' => now(),
         ]);
     }

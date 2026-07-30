@@ -13,6 +13,23 @@ class MyPageTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_pending_card_payment_is_displayed_as_payment_processing(): void
+    {
+        $user = User::factory()->create();
+        Reservation::factory()->create([
+            'user_id' => $user->id,
+            'payment_type' => 'credit_card',
+            'status' => 'pending_payment',
+        ]);
+
+        $this->actingAs($user)
+            ->get(route('reservations.index'))
+            ->assertOk()
+            ->assertSee('決済確認中')
+            ->assertSee('クレジットカード（決済確認中）')
+            ->assertDontSee('キャンセル済み');
+    }
+
     /**
      * ID 10: マイページで必要な情報が表示されるか
      */

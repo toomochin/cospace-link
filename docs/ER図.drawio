@@ -1,0 +1,93 @@
+<mxfile host="app.diagrams.net" modified="2026-07-25T00:00:00.000Z" agent="Codex" version="24.7.17" type="device" pages="2">
+  <diagram id="business-er" name="業務ER図">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="title" value="CoSpace Link 業務ER図" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=24;fontStyle=1;fontColor=#1F2937;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="400" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="users" value="&lt;b&gt;USERS（ユーザー）&lt;/b&gt;&lt;hr&gt;&lt;b&gt;PK&lt;/b&gt; id : bigint&lt;br&gt;name : varchar&lt;br&gt;email : varchar [UK]&lt;br&gt;email_verified_at : timestamp?&lt;br&gt;password : varchar&lt;br&gt;two_factor_secret : text?&lt;br&gt;two_factor_recovery_codes : text?&lt;br&gt;two_factor_confirmed_at : timestamp?&lt;br&gt;is_admin : boolean&lt;br&gt;is_active : boolean&lt;br&gt;remember_token : varchar?&lt;br&gt;created_at : timestamp&lt;br&gt;updated_at : timestamp" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#E3F2FD;strokeColor=#1565C0;fontColor=#1F2937;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="100" width="270" height="310" as="geometry"/>
+        </mxCell>
+        <mxCell id="passkeys" value="&lt;b&gt;PASSKEYS（パスキー）&lt;/b&gt;&lt;hr&gt;&lt;b&gt;PK&lt;/b&gt; id : bigint&lt;br&gt;&lt;b&gt;FK&lt;/b&gt; user_id : bigint&lt;br&gt;name : varchar&lt;br&gt;credential_id : varchar [UK]&lt;br&gt;credential : json&lt;br&gt;last_used_at : timestamp?&lt;br&gt;created_at : timestamp&lt;br&gt;updated_at : timestamp" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#E8F5E9;strokeColor=#2E7D32;fontColor=#1F2937;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="490" width="270" height="210" as="geometry"/>
+        </mxCell>
+        <mxCell id="reservations" value="&lt;b&gt;RESERVATIONS（予約）&lt;/b&gt;&lt;hr&gt;&lt;b&gt;PK&lt;/b&gt; id : bigint&lt;br&gt;&lt;b&gt;FK&lt;/b&gt; user_id : bigint&lt;br&gt;reservable_id : bigint&lt;br&gt;reservable_type : varchar&lt;br&gt;start_time : datetime&lt;br&gt;end_time : datetime&lt;br&gt;reserved_seats : integer&lt;br&gt;price : integer&lt;br&gt;payment_type : varchar&lt;br&gt;status : varchar&lt;br&gt;created_at : timestamp&lt;br&gt;updated_at : timestamp" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#FFF8E1;strokeColor=#F9A825;fontColor=#1F2937;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="520" y="170" width="290" height="290" as="geometry"/>
+        </mxCell>
+        <mxCell id="facilities" value="&lt;b&gt;FACILITIES（施設）&lt;/b&gt;&lt;hr&gt;&lt;b&gt;PK&lt;/b&gt; id : bigint&lt;br&gt;name : varchar&lt;br&gt;type : varchar ※&lt;br&gt;price_per_30min : integer&lt;br&gt;capacity : integer&lt;br&gt;equipment : varchar?&lt;br&gt;description : text?&lt;br&gt;image_path : varchar?&lt;br&gt;is_active : boolean&lt;br&gt;created_at : timestamp&lt;br&gt;updated_at : timestamp" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#F3E5F5;strokeColor=#7B1FA2;fontColor=#1F2937;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="520" y="560" width="290" height="270" as="geometry"/>
+        </mxCell>
+        <mxCell id="payments" value="&lt;b&gt;PAYMENTS（決済）&lt;/b&gt;&lt;hr&gt;&lt;b&gt;PK&lt;/b&gt; id : bigint&lt;br&gt;&lt;b&gt;FK&lt;/b&gt; reservation_id : bigint&lt;br&gt;stripe_payment_intent_id : varchar? [UK]&lt;br&gt;stripe_refund_id : varchar? [UK]&lt;br&gt;amount : integer&lt;br&gt;status : varchar&lt;br&gt;created_at : timestamp&lt;br&gt;updated_at : timestamp" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#E8F5E9;strokeColor=#2E7D32;fontColor=#1F2937;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="90" width="330" height="220" as="geometry"/>
+        </mxCell>
+        <mxCell id="mail_logs" value="&lt;b&gt;MAIL_LOGS（メール履歴）&lt;/b&gt;&lt;hr&gt;&lt;b&gt;PK&lt;/b&gt; id : bigint&lt;br&gt;&lt;b&gt;FK&lt;/b&gt; reservation_id : bigint?&lt;br&gt;mail_type : varchar&lt;br&gt;status : varchar&lt;br&gt;error_message : text?&lt;br&gt;created_at : timestamp&lt;br&gt;updated_at : timestamp" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#E8F5E9;strokeColor=#2E7D32;fontColor=#1F2937;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="380" width="330" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="webhooks" value="&lt;b&gt;PROCESSED_WEBHOOKS&lt;/b&gt;&lt;br&gt;（処理済みWebhook）&lt;hr&gt;&lt;b&gt;PK&lt;/b&gt; id : bigint&lt;br&gt;stripe_event_id : varchar [UK]&lt;br&gt;created_at : timestamp&lt;br&gt;updated_at : timestamp" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#FCE4EC;strokeColor=#C2185B;fontColor=#1F2937;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="680" width="330" height="160" as="geometry"/>
+        </mxCell>
+        <mxCell id="note" value="※ type はアプリケーションが利用する想定カラムです。現行マイグレーションでは定義が name 行のコメント内に入っており、新規DBには作成されません。&lt;br&gt;&lt;br&gt;reservable_id + reservable_type はポリモーフィック関連のため、FACILITIES への物理FKはありません。&lt;br&gt;&lt;br&gt;? = NULL許容 / UK = UNIQUE KEY" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;size=15;align=left;verticalAlign=top;spacing=8;fillColor=#FFF3E0;strokeColor=#EF6C00;fontColor=#5D4037;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="880" width="1320" height="140" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_user_res" value="予約する" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;strokeWidth=2;strokeColor=#455A64;fontSize=12;" edge="1" parent="1" source="users" target="reservations">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_user_pass" value="所有する" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;strokeWidth=2;strokeColor=#455A64;fontSize=12;" edge="1" parent="1" source="users" target="passkeys">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_fac_res" value="予約対象（論理関連）" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;dashed=1;strokeWidth=2;strokeColor=#7B1FA2;fontSize=12;" edge="1" parent="1" source="facilities" target="reservations">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_res_pay" value="決済" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;strokeWidth=2;strokeColor=#455A64;fontSize=12;" edge="1" parent="1" source="reservations" target="payments">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_res_mail" value="送信履歴" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERzeroToOne;startFill=0;endArrow=ERmany;endFill=0;strokeWidth=2;strokeColor=#455A64;fontSize=12;" edge="1" parent="1" source="reservations" target="mail_logs">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+  <diagram id="framework-er" name="Laravel基盤テーブル">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+        <mxCell id="ftitle" value="Laravel 基盤テーブル" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;fontSize=24;fontStyle=1;fontColor=#1F2937;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="400" height="40" as="geometry"/>
+        </mxCell>
+        <mxCell id="fusers" value="&lt;b&gt;USERS（参照）&lt;/b&gt;&lt;hr&gt;&lt;b&gt;PK&lt;/b&gt; id : bigint" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#E3F2FD;strokeColor=#1565C0;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="100" width="260" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="sessions" value="&lt;b&gt;SESSIONS&lt;/b&gt;&lt;hr&gt;&lt;b&gt;PK&lt;/b&gt; id : varchar&lt;br&gt;user_id : bigint? [INDEX]&lt;br&gt;ip_address : varchar?&lt;br&gt;user_agent : text?&lt;br&gt;payload : longtext&lt;br&gt;last_activity : integer [INDEX]" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#ECEFF1;strokeColor=#546E7A;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="430" y="80" width="300" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="passwords" value="&lt;b&gt;PASSWORD_RESET_TOKENS&lt;/b&gt;&lt;hr&gt;&lt;b&gt;PK&lt;/b&gt; email : varchar&lt;br&gt;token : varchar&lt;br&gt;created_at : timestamp?" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#ECEFF1;strokeColor=#546E7A;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="310" width="300" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="cache" value="&lt;b&gt;CACHE&lt;/b&gt;&lt;hr&gt;&lt;b&gt;PK&lt;/b&gt; key : varchar&lt;br&gt;value : mediumtext&lt;br&gt;expiration : bigint [INDEX]" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#ECEFF1;strokeColor=#546E7A;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="410" y="330" width="270" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="cachelocks" value="&lt;b&gt;CACHE_LOCKS&lt;/b&gt;&lt;hr&gt;&lt;b&gt;PK&lt;/b&gt; key : varchar&lt;br&gt;owner : varchar&lt;br&gt;expiration : bigint [INDEX]" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#ECEFF1;strokeColor=#546E7A;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="760" y="330" width="270" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="jobs" value="&lt;b&gt;JOBS&lt;/b&gt;&lt;hr&gt;&lt;b&gt;PK&lt;/b&gt; id : bigint&lt;br&gt;queue : varchar [INDEX]&lt;br&gt;payload : longtext&lt;br&gt;attempts : smallint&lt;br&gt;reserved_at : integer?&lt;br&gt;available_at : integer&lt;br&gt;created_at : integer" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#ECEFF1;strokeColor=#546E7A;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="550" width="300" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="batches" value="&lt;b&gt;JOB_BATCHES&lt;/b&gt;&lt;hr&gt;&lt;b&gt;PK&lt;/b&gt; id : varchar&lt;br&gt;name : varchar&lt;br&gt;total_jobs : integer&lt;br&gt;pending_jobs : integer&lt;br&gt;failed_jobs : integer&lt;br&gt;failed_job_ids : longtext&lt;br&gt;options : mediumtext?&lt;br&gt;cancelled_at : integer?&lt;br&gt;created_at : integer&lt;br&gt;finished_at : integer?" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#ECEFF1;strokeColor=#546E7A;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="410" y="550" width="300" height="260" as="geometry"/>
+        </mxCell>
+        <mxCell id="failed" value="&lt;b&gt;FAILED_JOBS&lt;/b&gt;&lt;hr&gt;&lt;b&gt;PK&lt;/b&gt; id : bigint&lt;br&gt;uuid : varchar [UK]&lt;br&gt;connection : varchar&lt;br&gt;queue : varchar&lt;br&gt;payload : longtext&lt;br&gt;exception : longtext&lt;br&gt;failed_at : timestamp" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=8;fillColor=#ECEFF1;strokeColor=#546E7A;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="780" y="550" width="300" height="200" as="geometry"/>
+        </mxCell>
+        <mxCell id="fnote" value="SESSIONS.user_id には索引がありますが、物理外部キー制約はありません。破線は論理関連を示します。&lt;br&gt;? = NULL許容 / UK = UNIQUE KEY" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;size=15;align=left;verticalAlign=top;spacing=8;fillColor=#FFF3E0;strokeColor=#EF6C00;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="880" width="1040" height="100" as="geometry"/>
+        </mxCell>
+        <mxCell id="e_user_session" value="利用する（論理関連）" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERzeroToOne;startFill=0;endArrow=ERmany;endFill=0;dashed=1;strokeWidth=2;strokeColor=#546E7A;fontSize=12;" edge="1" parent="1" source="fusers" target="sessions">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

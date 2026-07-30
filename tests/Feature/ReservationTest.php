@@ -5,13 +5,64 @@ namespace Tests\Feature;
 use App\Models\Facility;
 use App\Models\Reservation;
 use App\Models\User;
+use App\Services\StripeRefundService;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Mail;
+use Stripe\Stripe;
 use Tests\TestCase;
 
 class ReservationTest extends TestCase
 {
     use RefreshDatabase;
+
+    public function test_area_accepts_overlapping_reservation_within_remaining_capacity(): void
+    {
+        Mail::fake();
+        $user = User::factory()->create(['email_verified_at' => now()]);
+        $facility = Facility::factory()->create(['type' => 'area', 'capacity' => 5, 'is_active' => true]);
+        $start = Carbon::tomorrow()->setTime(10, 0);
+        $end = $start->copy()->addHour();
+        Reservation::factory()->create([
+            'reservable_type' => Facility::class,
+            'reservable_id' => $facility->id,
+            'start_time' => $start,
+            'end_time' => $end,
+            'reserved_seats' => 2,
+            'status' => 'confirmed',
+        ]);
+
+        $this->actingAs($user)->post(route('reservations.store', $facility), [
+            'start_time' => $start->format('Y-m-d H:i:s'),
+            'end_time' => $end->format('Y-m-d H:i:s'),
+            'reserved_seats' => 2,
+            'payment_type' => 'onsite',
+        ])->assertOk();
+
+        $this->assertDatabaseHas('reservations', [
+            'user_id' => $user->id,
+            'reservable_id' => $facility->id,
+            'reserved_seats' => 2,
+            'status' => 'confirmed',
+        ]);
+    }
+
+    public function test_reservation_outside_shop_opening_hours_is_rejected(): void
+    {
+        $user = User::factory()->create(['email_verified_at' => now()]);
+        $facility = Facility::factory()->create(['is_active' => true]);
+        $start = Carbon::tomorrow()->setTime(21, 0);
+        $end = $start->copy()->addHour();
+
+        $this->actingAs($user)->post(route('reservations.store', $facility), [
+            'start_time' => $start->format('Y-m-d H:i:s'),
+            'end_time' => $end->format('Y-m-d H:i:s'),
+            'reserved_seats' => 1,
+            'payment_type' => 'onsite',
+        ])->assertSessionHasErrors('start_time');
+
+        $this->assertDatabaseMissing('reservations', ['user_id' => $user->id]);
+    }
 
     /**
      * ID 7: 「予約を確定する」手続きで仮予約が作成されるか
@@ -22,7 +73,7 @@ class ReservationTest extends TestCase
     public function test_user_can_create_reservation(): void
     {
         // Stripe SDK のモック化（外部API通信をスキップ）
-        \Stripe\Stripe::setApiKey('sk_test_mock');
+        Stripe::setApiKey('sk_test_mock');
         $mockSession = (object) ['url' => 'https://checkout.stripe.com/pay/cs_test_mock'];
 
         $this->mock('alias:\Stripe\Checkout\Session', function ($mock) use ($mockSession) {
@@ -174,12 +225,14 @@ class ReservationTest extends TestCase
         $user = User::factory()->create([
             'email_verified_at' => now(),
         ]);
-        $start = Carbon::tomorrow()->setHour(10)->setMinute(0);
+        Mail::fake();
+        $start = Carbon::now()->addDays(2)->setHour(10)->setMinute(0);
 
         $reservation = Reservation::factory()->create([
             'user_id' => $user->id,
             'start_time' => $start,
             'status' => 'confirmed',
+            'payment_type' => 'onsite',
         ]);
 
         // 正しいルート名 reservations.destroy へ DELETE リクエスト送信
@@ -206,6 +259,7 @@ class ReservationTest extends TestCase
             'user_id' => $user->id,
             'start_time' => $start,
             'status' => 'confirmed',
+            'payment_type' => 'onsite',
         ]);
 
         // 正しいルート名 reservations.destroy へ DELETE リクエスト送信
@@ -215,5 +269,62 @@ class ReservationTest extends TestCase
         $this->assertTrue(
             $response->isForbidden() || session()->has('errors') || $response->isRedirect()
         );
+    }
+
+    public function test_credit_card_reservation_is_fully_refunded_when_cancelled(): void
+    {
+        Mail::fake();
+        $user = User::factory()->create(['email_verified_at' => now()]);
+        $reservation = Reservation::factory()->create([
+            'user_id' => $user->id,
+            'start_time' => now()->addDays(2),
+            'end_time' => now()->addDays(2)->addHour(),
+            'payment_type' => 'credit_card',
+            'status' => 'confirmed',
+            'price' => 2400,
+        ]);
+        \DB::table('payments')->insert([
+            'reservation_id' => $reservation->id,
+            'stripe_payment_intent_id' => 'pi_paid',
+            'amount' => 2400,
+            'status' => 'succeeded',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        $this->mock(StripeRefundService::class, function ($mock) use ($reservation): void {
+            $mock->shouldReceive('create')
+                ->once()
+                ->with('pi_paid', 2400, $reservation->id)
+                ->andReturn((object) ['id' => 're_refunded']);
+        });
+
+        $this->actingAs($user)
+            ->delete(route('reservations.destroy', $reservation))
+            ->assertRedirect(route('reservations.index'));
+
+        $this->assertDatabaseHas('reservations', ['id' => $reservation->id, 'status' => 'cancelled']);
+        $this->assertDatabaseHas('payments', [
+            'reservation_id' => $reservation->id,
+            'stripe_refund_id' => 're_refunded',
+            'status' => 'refunded',
+        ]);
+    }
+
+    public function test_reservation_cannot_be_cancelled_within_24_hours(): void
+    {
+        $user = User::factory()->create(['email_verified_at' => now()]);
+        $reservation = Reservation::factory()->create([
+            'user_id' => $user->id,
+            'start_time' => now()->addHours(23),
+            'end_time' => now()->addHours(24),
+            'payment_type' => 'onsite',
+            'status' => 'confirmed',
+        ]);
+
+        $this->actingAs($user)
+            ->delete(route('reservations.destroy', $reservation))
+            ->assertSessionHasErrors('reservation');
+
+        $this->assertDatabaseHas('reservations', ['id' => $reservation->id, 'status' => 'confirmed']);
     }
 }
