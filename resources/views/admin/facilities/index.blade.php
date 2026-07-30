@@ -21,6 +21,7 @@
         @endif
 
         {{-- テーブル一覧 --}}
+        <div class='table-wrapper'>
         <table class="admin-table">
             <thead>
                 <tr>
@@ -57,5 +58,6 @@
                 @endforelse
             </tbody>
         </table>
+        </div>
     </div>
 @endsection
