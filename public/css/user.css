@@ -375,19 +375,58 @@ body {
 .facility-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 20px;
+    gap: 14px;
 }
 
 .facility-card {
     background: #ffffff;
     border: 1px solid #e5e7eb;
     border-radius: 8px;
-    padding: 20px;
+    padding: 14px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.facility-card-inner {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.facility-card-inner > div:first-child {
+    min-width: 0;
+}
+
+.facility-card-inner > div:first-child > h3 + p {
+    display: -webkit-box;
+    margin: 6px 0 0;
+    overflow: hidden;
+    color: #6b7280;
+    line-height: 1.5;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+}
+
+.facility-card-inner > div:last-child {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 8px 12px;
+    margin-top: auto;
+    padding-top: 10px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.facility-card-inner > div:last-child > p {
+    margin: 0;
+}
+
+.facility-card-inner > div:last-child > a {
+    grid-column: 1 / -1;
 }
 
 .facility-card:hover {
@@ -428,8 +467,11 @@ body {
     padding: 10px 14px;
     border-radius: 4px;
     font-size: 0.9em;
-    margin-top: 15px;
+    margin-top: 8px;
     color: #374151;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .facility-meta-row {
