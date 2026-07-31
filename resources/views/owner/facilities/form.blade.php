@@ -13,6 +13,16 @@
     <label>設備・備品
         <textarea name='equipment' rows='3' placeholder='例：Wi-Fi、電源、モニター、ホワイトボード'>{{ old('equipment', $facility?->equipment) }}</textarea>
     </label>
+    <fieldset>
+        <legend>施設固有の設備タグ</legend>
+        @php($selectedAmenities = old('amenities', $facility?->amenities ?? []))
+        @foreach (\App\Support\AmenityNormalizer::FACILITY_AMENITIES as $amenity)
+            <label>
+                <input type='checkbox' name='amenities[]' value='{{ $amenity }}' @checked(in_array($amenity, $selectedAmenities, true))>
+                {{ $amenity }}
+            </label>
+        @endforeach
+    </fieldset>
     @if ($facility?->image_path)
         <div>
             <p>現在の施設画像</p>

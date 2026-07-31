@@ -21,6 +21,12 @@ class OwnerManagementTest extends TestCase
         $shop = Shop::factory()->create();
         $owner = User::factory()->create(['role' => 'shop_owner', 'shop_id' => $shop->id]);
 
+        $this->actingAs($owner)
+            ->get(route('owner.shop.edit'))
+            ->assertOk()
+            ->assertSee('フリードリンク')
+            ->assertDontSee('モニター');
+
         $this->actingAs($owner)->put(route('owner.shop.update'), [
             'name' => 'CoSpace 渋谷駅前',
             'area_name' => '渋谷',
@@ -73,6 +79,7 @@ class OwnerManagementTest extends TestCase
             'price_per_30min' => 1200,
             'capacity' => 6,
             'equipment' => 'Wi-Fi、電源、モニター',
+            'amenities' => ['モニター', '防音'],
             'description' => '画像を更新',
             'image' => UploadedFile::fake()->image('replacement.png'),
             'is_active' => false,
@@ -81,6 +88,7 @@ class OwnerManagementTest extends TestCase
         $facility->refresh();
         $this->assertSame(1200, $facility->price_per_30min);
         $this->assertSame('Wi-Fi、電源、モニター', $facility->equipment);
+        $this->assertSame(['モニター', '防音'], $facility->amenities);
         $this->assertFalse($facility->is_active);
         Storage::disk('public')->assertExists($facility->image_path);
         Storage::disk('public')->assertMissing('facilities/old.png');

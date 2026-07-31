@@ -42,7 +42,7 @@
         <fieldset>
             <legend>設備タグ</legend>
             @php($selectedAmenities = old('amenities', $shop->amenities ?? []))
-            @foreach (['Wi-Fi', '電源', 'Web会議ブース可'] as $amenity)
+            @foreach (\App\Support\AmenityNormalizer::SHOP_AMENITIES as $amenity)
                 <label>
                     <input type='checkbox' name='amenities[]' value='{{ $amenity }}' @checked(in_array($amenity, $selectedAmenities, true))>
                     {{ $amenity }}

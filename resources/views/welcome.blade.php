@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
+    @php
+        $searchParams = request()->only(['area', 'keyword', 'date', 'start_time', 'end_time', 'type', 'amenities']);
+    @endphp
     <div class="user-container">
         <h2 class="user-title" style="margin-bottom: 20px;">施設横断検索</h2>
 
@@ -28,7 +31,7 @@
                 <option value="area" @selected(request('type') === 'area')>エリア（席）</option>
             </select>
 
-            @foreach (['Wi-Fi', '電源', 'Web会議ブース可', 'モニター', 'フリードリンク'] as $amenity)
+            @foreach (\App\Support\AmenityNormalizer::SEARCHABLE_AMENITIES as $amenity)
                 <label>
                     <input type="checkbox" name="amenities[]" value="{{ $amenity }}"
                         @checked(in_array($amenity, request('amenities', []), true))>
@@ -62,7 +65,7 @@
                                 ¥{{ number_format($facility->price_per_30min) }}
                                 <span class="facility-meta-unit">/ 30分</span>
                             </p>
-                            <a href="{{ route('facilities.show', $facility->id) }}" class="btn-user-primary"
+                            <a href="{{ route('facilities.show', ['facility' => $facility->id] + $searchParams) }}" class="btn-user-primary"
                                 style="display: block; text-align: center;">詳細・予約</a>
                         </div>
                     </div>

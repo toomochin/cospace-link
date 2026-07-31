@@ -15,6 +15,7 @@ class FacilityFactory extends Factory
             'type' => $this->faker->randomElement(['meeting_room', 'area']),
             'capacity' => $this->faker->numberBetween(1, 30),
             'price_per_30min' => $this->faker->randomElement([300, 500, 1000]),
+            'amenities' => [],
             'description' => $this->faker->realText(100),
             'image_path' => null,
             'is_active' => true,

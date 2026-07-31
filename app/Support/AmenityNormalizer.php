@@ -6,6 +6,24 @@ use Illuminate\Support\Str;
 
 class AmenityNormalizer
 {
+    public const SHOP_AMENITIES = [
+        'Wi-Fi',
+        '電源',
+        'フリードリンク',
+    ];
+
+    public const FACILITY_AMENITIES = [
+        'モニター',
+        'ホワイトボード',
+        '防音',
+        'Web会議ブース可',
+    ];
+
+    public const SEARCHABLE_AMENITIES = [
+        ...self::SHOP_AMENITIES,
+        ...self::FACILITY_AMENITIES,
+    ];
+
     private const ALIASES = [
         'wifi' => 'Wi-Fi',
         'wi-fi' => 'Wi-Fi',

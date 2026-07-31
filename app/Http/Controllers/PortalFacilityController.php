@@ -25,7 +25,10 @@ class PortalFacilityController extends FacilityController
         $query->when($filters['type'] ?? null, fn (Builder $query, string $type) => $query->where('type', $type));
 
         foreach ($filters['amenities'] ?? [] as $amenity) {
-            $query->whereHas('shop', fn (Builder $shop) => $shop->whereJsonContains('amenities', $amenity));
+            $query->where(function (Builder $query) use ($amenity): void {
+                $query->whereJsonContains('facilities.amenities', $amenity)
+                    ->orWhereHas('shop', fn (Builder $shop) => $shop->whereJsonContains('amenities', $amenity));
+            });
         }
 
         $query->when($filters['keyword'] ?? null, function ($query, string $keyword): void {

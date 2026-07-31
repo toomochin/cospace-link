@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
+    @php
+        $searchParams = request()->only(['area', 'keyword', 'date', 'start_time', 'end_time', 'type', 'amenities']);
+    @endphp
     <div class="user-container" style="padding-bottom: 40px;">
 
         {{-- エラーメッセージ表示 --}}
@@ -14,7 +17,7 @@
             </div>
         @endif
 
-        <a href="{{ route('home') }}" class="btn-user-secondary">&larr; 一覧に戻る</a>
+        <a href="{{ route('home', $searchParams) }}" class="btn-user-secondary">&larr; 検索結果に戻る</a>
 
         {{-- 施設詳細 ＆ 予約入力フォーム --}}
         <div class="user-card" style="margin-top: 15px;">

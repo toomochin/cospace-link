@@ -13,12 +13,15 @@ class Facility extends Model
 
     protected $fillable = [
         'shop_id', 'name', 'type', 'price_per_30min', 'capacity',
-        'equipment', 'description', 'is_active', 'image_path',
+        'equipment', 'amenities', 'description', 'is_active', 'image_path',
     ];
 
     protected function casts(): array
     {
-        return ['is_active' => 'boolean'];
+        return [
+            'amenities' => 'array',
+            'is_active' => 'boolean',
+        ];
     }
 
     public function shop(): BelongsTo
