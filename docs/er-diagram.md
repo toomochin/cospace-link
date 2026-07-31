@@ -1,17 +1,34 @@
 # ER図
 
-このER図は `database/migrations` の定義を基準に、2026年7月25日時点の
+このER図は `database/migrations` の定義を基準に、2026年7月31日時点の
 データベース構造を表したものです。
 
 ## 業務テーブル
 
 ```mermaid
 erDiagram
+    SHOPS ||--o{ FACILITIES : "施設を所有する"
+    SHOPS o|--o{ USERS : "店舗管理者が所属する"
     USERS ||--o{ RESERVATIONS : "予約する"
     USERS ||--o{ PASSKEYS : "所有する"
     FACILITIES ||--o{ RESERVATIONS : "予約対象（論理関連）"
     RESERVATIONS ||--o{ PAYMENTS : "決済を持つ"
     RESERVATIONS o|--o{ MAIL_LOGS : "メール送信履歴を持つ"
+
+    SHOPS {
+        bigint id PK
+        varchar name
+        varchar area_name "INDEX"
+        varchar address
+        text access "NULL可"
+        varchar opening_hours
+        text description "NULL可"
+        varchar image_path "NULL可"
+        json amenities "NULL可・店舗共通設備"
+        boolean is_active "INDEX"
+        timestamp created_at
+        timestamp updated_at
+    }
 
     USERS {
         bigint id PK
@@ -23,6 +40,8 @@ erDiagram
         text two_factor_recovery_codes "NULL可"
         timestamp two_factor_confirmed_at "NULL可"
         boolean is_admin
+        varchar role "INDEX・user / shop_owner / system_admin"
+        bigint shop_id FK "NULL可・ON DELETE SET NULL"
         boolean is_active
         varchar remember_token "NULL可"
         timestamp created_at
@@ -42,11 +61,13 @@ erDiagram
 
     FACILITIES {
         bigint id PK
+        bigint shop_id FK "ON DELETE CASCADE"
         varchar name
         varchar type "meeting_room / area"
         integer price_per_30min
         integer capacity
         varchar equipment "NULL可"
+        json amenities "NULL可・施設固有設備"
         text description "NULL可"
         varchar image_path "NULL可"
         boolean is_active
@@ -100,6 +121,10 @@ erDiagram
 
 ### 関連の補足
 
+- `facilities.shop_id` → `shops.id` は物理外部キーです。店舗削除時に施設も削除されます。
+- `users.shop_id` → `shops.id` はNULL許容の物理外部キーです。店舗削除時はNULLへ更新されます。`shop_owner` は1店舗に所属する前提です。
+- `shops.amenities` はWi-Fi・電源・フリードリンクなどの店舗共通設備を保持します。
+- `facilities.amenities` はモニター・ホワイトボード・防音・Web会議ブース可などの施設固有設備を保持します。
 - `reservations.user_id` → `users.id` は物理外部キーです。ユーザー削除時に予約も削除されます。
 - `reservations.reservable_id` と `reservations.reservable_type` はLaravelのポリモーフィック関連です。現在の実装では `facilities` が予約対象ですが、データベース上の物理外部キーはありません。
 - `payments.reservation_id` → `reservations.id` は物理外部キーです。予約削除時に決済も削除されます。`reservation_id` に一意制約はないため、1予約に複数の決済レコードを保持できます。
