@@ -3,6 +3,7 @@
 @section('content')
     @php
         $searchParams = request()->only(['area', 'keyword', 'date', 'start_time', 'end_time', 'type', 'amenities']);
+        $selectedAmenities = is_array(request('amenities')) ? request('amenities') : [];
     @endphp
     <div class="user-container">
         <h2 class="user-title" style="margin-bottom: 20px;">施設横断検索</h2>
@@ -20,10 +21,21 @@
                 class="form-control">
             <input type="text" name="keyword" value="{{ request('keyword') }}" placeholder="店舗名・施設名・特徴"
                 class="form-control filter-input-keyword">
-            <input type="date" name="date" value="{{ request('date') }}" min="{{ now()->format('Y-m-d') }}"
-                class="form-control">
-            <input type="time" name="start_time" value="{{ request('start_time') }}" step="1800" class="form-control">
-            <input type="time" name="end_time" value="{{ request('end_time') }}" step="1800" class="form-control">
+            <div class="filter-field">
+                <label for="search-date">利用日</label>
+                <input id="search-date" type="date" name="date" value="{{ request('date') }}"
+                    min="{{ now()->format('Y-m-d') }}" class="form-control">
+            </div>
+            <div class="filter-field">
+                <label for="search-start-time">開始時間</label>
+                <input id="search-start-time" type="time" name="start_time" value="{{ request('start_time') }}"
+                    step="1800" class="form-control">
+            </div>
+            <div class="filter-field">
+                <label for="search-end-time">終了時間</label>
+                <input id="search-end-time" type="time" name="end_time" value="{{ request('end_time') }}"
+                    step="1800" class="form-control">
+            </div>
 
             <select name="type" class="form-control">
                 <option value="">すべての種別</option>
@@ -31,13 +43,33 @@
                 <option value="area" @selected(request('type') === 'area')>エリア（席）</option>
             </select>
 
-            @foreach (\App\Support\AmenityNormalizer::SEARCHABLE_AMENITIES as $amenity)
-                <label>
-                    <input type="checkbox" name="amenities[]" value="{{ $amenity }}"
-                        @checked(in_array($amenity, request('amenities', []), true))>
-                    {{ $amenity }}
-                </label>
-            @endforeach
+            <details class="filter-amenities-dropdown">
+                <summary>
+                    設備タグ
+                    @if (count($selectedAmenities) > 0)
+                        <span class="filter-selected-count">{{ count($selectedAmenities) }}件</span>
+                    @endif
+                    <span aria-hidden="true">▾</span>
+                </summary>
+                <div class="filter-amenities-menu">
+                    <div class="filter-amenities-title">店舗共通設備</div>
+                    @foreach (\App\Support\AmenityNormalizer::SHOP_AMENITIES as $amenity)
+                        <label>
+                            <input type="checkbox" name="amenities[]" value="{{ $amenity }}"
+                                @checked(in_array($amenity, $selectedAmenities, true))>
+                            {{ $amenity }}
+                        </label>
+                    @endforeach
+                    <div class="filter-amenities-title">施設固有設備</div>
+                    @foreach (\App\Support\AmenityNormalizer::FACILITY_AMENITIES as $amenity)
+                        <label>
+                            <input type="checkbox" name="amenities[]" value="{{ $amenity }}"
+                                @checked(in_array($amenity, $selectedAmenities, true))>
+                            {{ $amenity }}
+                        </label>
+                    @endforeach
+                </div>
+            </details>
 
             <button type="submit" class="btn-user-dark" style="width: auto; padding: 10px 20px;">検索</button>
         </form>

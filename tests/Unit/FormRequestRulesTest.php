@@ -37,6 +37,22 @@ class FormRequestRulesTest extends TestCase
         $this->assertTrue($validator->fails());
     }
 
+    public function test_date_start_and_end_time_must_be_entered_together(): void
+    {
+        $request = new FacilitySearchRequest;
+
+        $timeOnly = Validator::make([
+            'start_time' => '09:00',
+            'end_time' => '10:00',
+        ], $request->rules());
+        $dateOnly = Validator::make([
+            'date' => now()->addDay()->format('Y-m-d'),
+        ], $request->rules());
+
+        $this->assertTrue($timeOnly->fails());
+        $this->assertTrue($dateOnly->fails());
+    }
+
     public function test_owner_shop_rules_accept_valid_data(): void
     {
         $request = new OwnerShopRequest;

@@ -17,6 +17,8 @@ class RoleNavigationTest extends TestCase
 
         $this->actingAs($admin)->get(route('admin.dashboard'))
             ->assertOk()
+            ->assertSee('管理メニュー')
+            ->assertSee('プロフィール編集')
             ->assertSee(route('admin.shops.index'), false)
             ->assertSee(route('admin.facilities.index'), false)
             ->assertSee(route('admin.reservations.index'), false)
@@ -31,6 +33,8 @@ class RoleNavigationTest extends TestCase
 
         $this->actingAs($owner)->get(route('owner.dashboard'))
             ->assertOk()
+            ->assertSee('店舗管理')
+            ->assertSee('プロフィール編集')
             ->assertSee(route('owner.facilities.index'), false)
             ->assertSee(route('owner.reservations.index'), false)
             ->assertSee(route('owner.shop.edit'), false)
