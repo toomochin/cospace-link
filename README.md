@@ -130,8 +130,6 @@ stripe listen --forward-to http://localhost/stripe/webhook
 ![ER図](docs/ER図.png)
 
 - [Mermaid版](docs/er-diagram.md)
-- [draw.io版](docs/ER図.drawio)
-- [draw.io表形式版](docs/ER図_表形式.drawio)
 
 ## テスト
 
