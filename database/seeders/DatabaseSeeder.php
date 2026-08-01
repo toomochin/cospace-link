@@ -7,50 +7,29 @@ use App\Models\Reservation;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        // テスト用の一般会員を作成（ログイン確認用）
-        $testUser = User::factory()->create([
-            'name' => 'テスト太郎',
-            'email' => 'test@example.com',
-            'password' => Hash::make('password'),
-            'is_admin' => false,
-            'is_active' => true,
-            'email_verified_at' => now(), // 最初から認証済み状態にする
-        ]);
-
-        // テスト用の管理者を作成（管理者ダッシュボード確認用）
-        User::factory()->create([
-            'name' => '管理者二郎',
-            'email' => 'admin@example.com',
-            'password' => Hash::make('password'),
-            'is_admin' => true,
-            'is_active' => true,
-            'email_verified_at' => now(),
-        ]);
-
-        // その他の一般ユーザーをランダムに5人作成
-        $randomUsers = User::factory(5)->create();
-
-        // 一般ユーザー全員をひとまとめにしておく
-        $allUsers = $randomUsers->concat([$testUser]);
-
-        // 施設（会議室・フリーエリア）データを投入
+        // 店舗、ユーザー、施設の順でマスターデータを投入
         $this->call([
             ShopSeeder::class,
-            PortalUserSeeder::class,
+            UserSeeder::class,
             FacilitySeeder::class,
         ]);
+
+        // 予約ダミーデータの対象となる一般ユーザーを取得
+        $allUsers = User::query()
+            ->where('role', 'user')
+            ->where('is_active', true)
+            ->get();
 
         // 登録された施設を取得
         $facilities = Facility::all();
 
         // 施設データが存在する場合のみ予約ダミーデータを投入
-        if ($facilities->isNotEmpty()) {
+        if ($allUsers->isNotEmpty() && $facilities->isNotEmpty()) {
             $statuses = ['confirmed', 'confirmed', 'confirmed', 'pending_payment'];
 
             // 15件の予約ダミーを作成

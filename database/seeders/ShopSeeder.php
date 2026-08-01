@@ -16,7 +16,7 @@ class ShopSeeder extends Seeder
                 'opening_hours' => '09:00-21:00',
                 'description' => 'Web会議にも集中作業にも使いやすい都市型ワークスペースです。',
                 'image_path' => 'images/shops/shibuya.jpg',
-                'amenities' => ['Wi-Fi', '電源', 'Web会議ブース可'], 'is_active' => true,
+                'amenities' => ['Wi-Fi', '電源'], 'is_active' => true,
             ],
             [
                 'name' => 'CoSpace 梅田', 'area_name' => '梅田',
@@ -24,7 +24,7 @@ class ShopSeeder extends Seeder
                 'opening_hours' => '08:00-22:00',
                 'description' => '会議室とフリーアドレス席を備えた大型店舗です。',
                 'image_path' => 'images/shops/umeda.jpg',
-                'amenities' => ['Wi-Fi', '電源', 'モニター', 'フリードリンク'], 'is_active' => true,
+                'amenities' => ['Wi-Fi', '電源', 'フリードリンク'], 'is_active' => true,
             ],
         ];
 
