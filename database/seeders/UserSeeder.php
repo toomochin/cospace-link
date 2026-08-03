@@ -41,7 +41,7 @@ class UserSeeder extends Seeder
         $umedaShop = Shop::query()->where('name', 'CoSpace 梅田')->firstOrFail();
 
         User::query()->updateOrCreate(
-            ['email' => 'owner@example.com'],
+            ['email' => 'shibuya-owner@example.com'],
             [
                 'name' => '渋谷店舗管理者',
                 'password' => Hash::make('password'),
