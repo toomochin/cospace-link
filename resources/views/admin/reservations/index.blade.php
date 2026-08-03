@@ -13,8 +13,8 @@
             </div>
         </div>
 
-        <form method='GET' action='{{ route('admin.reservations.index') }}'>
-            <label>店舗
+        <form method='GET' action='{{ route('admin.reservations.index') }}' class='reservation-filter-form'>
+            <label class='reservation-filter-field'>店舗
                 <select name='shop_id'>
                     <option value=''>全店舗</option>
                     @foreach ($shops as $shop)
@@ -22,9 +22,9 @@
                     @endforeach
                 </select>
             </label>
-            <label>利用日（開始）<input type='date' name='date_from' value='{{ $filters['date_from'] ?? '' }}'></label>
-            <label>利用日（終了）<input type='date' name='date_to' value='{{ $filters['date_to'] ?? '' }}'></label>
-            <label>予約状態
+            <label class='reservation-filter-field'>利用日（開始）<input type='date' name='date_from' value='{{ $filters['date_from'] ?? '' }}'></label>
+            <label class='reservation-filter-field'>利用日（終了）<input type='date' name='date_to' value='{{ $filters['date_to'] ?? '' }}'></label>
+            <label class='reservation-filter-field'>予約状態
                 <select name='status'>
                     <option value=''>すべて</option>
                     <option value='pending_payment' @selected(($filters['status'] ?? '') === 'pending_payment')>決済確認中</option>
@@ -32,8 +32,10 @@
                     <option value='cancelled' @selected(($filters['status'] ?? '') === 'cancelled')>キャンセル済み</option>
                 </select>
             </label>
-            <button type='submit'>絞り込む</button>
-            <a href='{{ route('admin.reservations.index') }}'>条件をクリア</a>
+            <div class='reservation-filter-actions'>
+                <button type='submit' class='btn-primary-sm'>絞り込む</button>
+                <a href='{{ route('admin.reservations.index') }}' class='btn-cancel'>条件をクリア</a>
+            </div>
         </form>
         <p>
             確定売上: ¥{{ number_format($confirmedSales) }} /

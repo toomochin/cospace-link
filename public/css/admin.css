@@ -705,3 +705,71 @@
 .admin-card form > button[type=submit]:hover {
     background: #1d4ed8;
 }
+
+/* 予約一覧：横並びのコンパクト検索フォーム */
+.admin-container > form.reservation-filter-form {
+    display: grid;
+    grid-template-columns: minmax(150px, 1.25fr) repeat(2, minmax(145px, 1fr)) minmax(130px, 0.9fr) auto;
+    align-items: end;
+    gap: 10px;
+    margin: 12px 0 16px;
+    padding: 12px;
+}
+
+.admin-container > form.reservation-filter-form .reservation-filter-field {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+    color: #64748b;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.2;
+}
+
+.admin-container > form.reservation-filter-form input,
+.admin-container > form.reservation-filter-form select {
+    min-height: 38px;
+    padding: 7px 9px;
+    font-size: 0.85rem;
+}
+
+.reservation-filter-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.reservation-filter-actions .btn-primary-sm,
+.reservation-filter-actions .btn-cancel {
+    min-height: 38px;
+    padding: 7px 12px;
+    line-height: 1.5;
+}
+
+@media (max-width: 900px) {
+    .admin-container > form.reservation-filter-form {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .reservation-filter-actions {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 640px) {
+    .admin-container > form.reservation-filter-form {
+        grid-template-columns: 1fr;
+        padding: 10px;
+    }
+
+    .reservation-filter-actions {
+        grid-column: auto;
+    }
+
+    .reservation-filter-actions > * {
+        flex: 1 1 0;
+        justify-content: center;
+        text-align: center;
+    }
+}
