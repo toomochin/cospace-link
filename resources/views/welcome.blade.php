@@ -77,6 +77,34 @@
         <div class="facility-grid">
             @forelse ($facilities as $facility)
                 <div class="facility-card">
+                    @php
+                        $facilityImageUrl = null;
+
+                        if ($facility->image_path) {
+                            if (Storage::disk('public')->exists($facility->image_path)) {
+                                $facilityImageUrl = Storage::url($facility->image_path);
+                            } elseif (is_file(public_path($facility->image_path))) {
+                                $facilityImageUrl = asset($facility->image_path);
+                            }
+                        }
+                    @endphp
+                    <div class="facility-card-image-wrapper">
+                        @if ($facilityImageUrl)
+                            <img
+                                src="{{ $facilityImageUrl }}"
+                                alt="{{ $facility->name }}の施設画像"
+                                class="facility-card-image"
+                                loading="lazy"
+                                width="640"
+                                height="360"
+                            >
+                        @else
+                            <div class="facility-card-image-placeholder" aria-label="施設画像は未登録です">
+                                <span aria-hidden="true">🏢</span>
+                                <span>画像未登録</span>
+                            </div>
+                        @endif
+                    </div>
                     <div class="facility-card-body facility-card-inner">
                         <div>
                             <span class="user-badge user-badge-gray">

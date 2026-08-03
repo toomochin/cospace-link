@@ -21,39 +21,61 @@
 
         {{-- 施設詳細 ＆ 予約入力フォーム --}}
         <div class="user-card" style="margin-top: 15px;">
-            <span class="user-badge user-badge-gray" style="margin-bottom: 12px;">
-                {{ $facility->type === 'meeting_room' || $facility->type === 'room' ? '会議室' : 'エリア席' }}
-            </span>
+            @php
+                $facilityImageUrl = null;
 
-            {{-- 施設画像表示エリア --}}
-            @if ($facility->image_path)
-                <div>
-                    <img src="{{ asset('storage/' . $facility->image_path) }}" alt="{{ $facility->name }}" class="facility-detail-img">
+                if ($facility->image_path) {
+                    if (Storage::disk('public')->exists($facility->image_path)) {
+                        $facilityImageUrl = Storage::url($facility->image_path);
+                    } elseif (is_file(public_path($facility->image_path))) {
+                        $facilityImageUrl = asset($facility->image_path);
+                    }
+                }
+            @endphp
+
+            <section class="facility-detail-summary" aria-label="施設概要">
+                <div class="facility-detail-visual">
+                    @if ($facilityImageUrl)
+                        <img src="{{ $facilityImageUrl }}" alt="{{ $facility->name }}の施設画像" class="facility-detail-img">
+                    @else
+                        <div class="facility-card-image-placeholder" aria-label="施設画像は未登録です">
+                            <span aria-hidden="true">🏢</span>
+                            <span>画像未登録</span>
+                        </div>
+                    @endif
                 </div>
-            @endif
 
-            <h2 class="user-title" style="margin-bottom: 12px;">{{ $facility->name }}</h2>
-            <p style="color: #4b5563; line-height: 1.6; margin: 0;">{{ $facility->description }}</p>
-
-            @if ($facility->equipment)
-                <div class="facility-equipment-box">
-                    <strong>設備・備品:</strong> {{ $facility->equipment }}
-                </div>
-            @endif
-
-            <div class="facility-meta-row">
-                <div>
-                    <span class="facility-meta-label">利用可能定員</span>
-                    <p class="facility-meta-value">{{ $facility->capacity }} 名</p>
-                </div>
-                <div>
-                    <span class="facility-meta-label">利用料金</span>
-                    <p class="facility-meta-value price">
-                        ¥{{ number_format($facility->price_per_30min) }}
-                        <span class="facility-meta-unit">/ 30分</span>
+                <div class="facility-detail-content">
+                    <span class="user-badge user-badge-gray">
+                        {{ $facility->type === 'meeting_room' || $facility->type === 'room' ? '会議室' : 'エリア席' }}
+                    </span>
+                    <p class="facility-detail-shop">
+                        {{ $facility->shop->name }} ／ {{ $facility->shop->area_name }}
                     </p>
+                    <h2 class="user-title">{{ $facility->name }}</h2>
+                    <p class="facility-detail-description">{{ $facility->description }}</p>
+
+                    @if ($facility->equipment)
+                        <div class="facility-equipment-box">
+                            <strong>設備・備品:</strong> {{ $facility->equipment }}
+                        </div>
+                    @endif
+
+                    <div class="facility-meta-row">
+                        <div>
+                            <span class="facility-meta-label">利用可能定員</span>
+                            <p class="facility-meta-value">{{ $facility->capacity }} 名</p>
+                        </div>
+                        <div>
+                            <span class="facility-meta-label">利用料金</span>
+                            <p class="facility-meta-value price">
+                                ¥{{ number_format($facility->price_per_30min) }}
+                                <span class="facility-meta-unit">/ 30分</span>
+                            </p>
+                        </div>
+                    </div>
                 </div>
-            </div>
+            </section>
 
             <h3 style="margin-bottom: 15px; font-size: 1.2rem; color: #1f2937;">予約日時を選択</h3>
 

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Facility;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class FacilityTest extends TestCase
@@ -98,4 +99,28 @@ class FacilityTest extends TestCase
         // 未ログイン時のリダイレクト確認
         $response->assertRedirect(route('login'));
     }
+
+    public function test_facility_card_displays_image_or_placeholder(): void
+    {
+        Storage::fake('public');
+        Storage::disk('public')->put('facilities/card-image.jpg', 'image-data');
+
+        Facility::factory()->create([
+            'name' => '画像付き施設',
+            'image_path' => 'facilities/card-image.jpg',
+            'is_active' => true,
+        ]);
+        Facility::factory()->create([
+            'name' => '画像なし施設',
+            'image_path' => null,
+            'is_active' => true,
+        ]);
+
+        $this->get(route('home'))
+            ->assertOk()
+            ->assertSee('/storage/facilities/card-image.jpg', false)
+            ->assertSee('画像付き施設の施設画像')
+            ->assertSee('画像未登録');
+    }
+
 }

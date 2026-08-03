@@ -772,3 +772,125 @@ body {
     gap: 10px;
     justify-content: center;
 }
+
+/* 施設検索カード：施設画像 */
+.facility-card-image-wrapper {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    margin-bottom: 12px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    border-radius: 7px;
+    background: #f1f5f9;
+}
+
+.facility-card-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.facility-card-image-placeholder {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 4px;
+    color: #64748b;
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.facility-card-image-placeholder span:first-child {
+    font-size: 1.8rem;
+    line-height: 1;
+}
+
+/* 施設詳細：画像と基本情報をコンパクトにまとめる */
+.facility-detail-summary {
+    display: grid;
+    grid-template-columns: minmax(240px, 0.9fr) minmax(0, 1.35fr);
+    gap: 20px;
+    align-items: stretch;
+    margin-bottom: 18px;
+}
+
+.facility-detail-visual {
+    min-height: 220px;
+    overflow: hidden;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background: #f1f5f9;
+}
+
+.facility-detail-visual .facility-detail-img {
+    display: block;
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    min-height: 220px;
+    margin: 0;
+    object-fit: cover;
+    border: 0;
+    border-radius: 0;
+}
+
+.facility-detail-content {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.facility-detail-shop {
+    margin: 7px 0 3px;
+    color: #64748b;
+    font-size: 0.85rem;
+}
+
+.facility-detail-content .user-title {
+    margin: 0 0 7px;
+}
+
+.facility-detail-description {
+    margin: 0;
+    color: #4b5563;
+    line-height: 1.5;
+}
+
+.facility-detail-content .facility-equipment-box {
+    width: 100%;
+    white-space: normal;
+}
+
+.facility-detail-content .facility-meta-row {
+    display: grid;
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin: auto 0 0;
+    padding: 10px 0 0;
+    border-top: 1px solid #e5e7eb;
+    border-bottom: 0;
+}
+
+.facility-detail-content .facility-meta-value {
+    margin: 2px 0 0;
+}
+
+@media (max-width: 700px) {
+    .facility-detail-summary {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
+    .facility-detail-visual,
+    .facility-detail-visual .facility-detail-img {
+        min-height: 0;
+        aspect-ratio: 16 / 9;
+    }
+}
