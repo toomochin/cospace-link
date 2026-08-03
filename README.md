@@ -8,6 +8,7 @@
 
 - 会員登録、メール認証、ログイン、プロフィール編集
 - エリア、キーワード、日時、種別、設備タグによる空き施設検索
+- 検索結果カードの施設画像表示、コンパクトな施設詳細表示
 - 30分単位の空き状況、重複予約防止、エリア席の定員管理
 - Stripeカード決済、現地払い、無料予約
 - 予約履歴、キャンセル、Stripe返金、メール通知
@@ -24,7 +25,10 @@
 - ポータル全体の集計
 - 加盟店舗の登録、編集、掲載停止、再掲載
 - 店舗管理者の招待
-- 全施設、全予約、会員、代理予約の管理
+- 全施設・全予約への店舗名／エリア表示
+- 施設一覧の店舗、エリア、種別、公開状態による絞り込み・並び替え
+- 予約一覧の店舗、利用日、予約状態による絞り込み・並び替え、CSV出力
+- 会員、代理予約の管理
 
 ## 設備タグ
 
@@ -62,12 +66,13 @@ DB_DATABASE=cospace_link
 DB_USERNAME=sail
 DB_PASSWORD=password
 REDIS_HOST=redis
-開発環境ではメール確認用に Mailpit を使用しています。
 MAIL_MAILER=smtp
 MAIL_HOST=mailpit
 MAIL_PORT=1025
 MAIL_FROM_ADDRESS=admin@example.com
 ```
+
+開発環境ではメール確認用に Mailpit を使用しています。
 
 ```bash
 ./vendor/bin/sail up -d --build
@@ -88,8 +93,9 @@ DBを作り直す場合:
 ```dotenv
 STRIPE_SECRET=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
-※ここを自分のStripeのキーに差し替えてください
 ```
+
+上記を自分のStripeテスト環境のキーへ差し替えてください。
 
 ```bash
 stripe listen --forward-to http://localhost/stripe/webhook
@@ -101,11 +107,14 @@ stripe listen --forward-to http://localhost/stripe/webhook
 
 `migrate:fresh --seed` で作成され、パスワードはすべて `password` です。
 
-| ロール       | メールアドレス      | 所属         |
-| ------------ | ------------------- | ------------ |
-| 全体管理者   | `admin@example.com` | ポータル全体 |
-| 店舗管理者   | `owner@example.com` | CoSpace 渋谷 |
-| 一般ユーザー | `test@example.com`  | なし         |
+| ロール       | メールアドレス              | 所属         |
+| ------------ | --------------------------- | ------------ |
+| 全体管理者   | `admin@example.com`         | ポータル全体 |
+| 店舗管理者   | `shibuya-owner@example.com` | CoSpace 渋谷 |
+| 店舗管理者   | `umeda-owner@example.com`   | CoSpace 梅田 |
+| 一般ユーザー | `test@example.com`          | なし         |
+
+初期データとしてCoSpace 渋谷・CoSpace 梅田の2店舗と、公開中・メンテナンス中を含む15施設が登録されます。
 
 ## 開発用URL
 
@@ -136,3 +145,5 @@ stripe listen --forward-to http://localhost/stripe/webhook
 ```bash
 ./vendor/bin/sail artisan test
 ```
+
+現在のテスト実績: 74 tests / 270 assertions
