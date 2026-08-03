@@ -44,7 +44,8 @@ class DashboardController extends Controller
             ->count();
 
         // 5. タイムライン表示用のアクティブな全施設を取得
-        $facilities = Facility::where('is_active', true)
+        $facilities = Facility::with('shop:id,name,area_name')
+            ->where('is_active', true)
             ->whereHas('shop', fn ($query) => $query->where('is_active', true))
             ->orderBy('name', 'asc')
             ->get();

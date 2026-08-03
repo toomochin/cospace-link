@@ -77,7 +77,7 @@
         <table class="admin-table" style="min-width: 800px; table-layout: auto;">
             <thead>
                 <tr class="text-center">
-                    <th style="width: 180px; text-align: left; border-right: 1px solid #cbd5e1;">施設名</th>
+                    <th style="width: 210px; text-align: left; border-right: 1px solid #cbd5e1;">店舗・施設</th>
                     @for ($h = 9; $h < 21; $h++)
                         <th style="width: 60px; text-align: center; border-right: 1px solid #e2e8f0;">{{ sprintf('%02d:00', $h) }}</th>
                     @endfor
@@ -88,6 +88,9 @@
                     <tr>
                         <td style="font-weight: bold; border-right: 1px solid #cbd5e1; background: #f8fafc;">
                             {{ $facility->name }}
+                            <div class="text-muted" style="font-size: 0.75rem; font-weight: normal;">
+                                {{ $facility->shop?->name ?? '店舗情報なし' }}（{{ $facility->shop?->area_name ?? 'エリア未設定' }}）
+                            </div>
                             <div class="text-muted" style="font-size: 0.75rem; font-weight: normal;">
                                 {{ $facility->type === 'meeting_room' ? '個室' : 'エリア' }} (定員{{ $facility->capacity }}名)
                             </div>

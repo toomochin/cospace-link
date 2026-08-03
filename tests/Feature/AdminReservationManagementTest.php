@@ -17,7 +17,7 @@ class AdminReservationManagementTest extends TestCase
     public function test_admin_can_filter_shop_totals_and_export_csv(): void
     {
         $admin = User::factory()->create(['role' => 'system_admin']);
-        $shop = Shop::factory()->create(['name' => '対象店舗']);
+        $shop = Shop::factory()->create(['name' => '対象店舗', 'area_name' => '対象エリア']);
         $otherShop = Shop::factory()->create(['name' => '対象外店舗']);
         $facility = Facility::factory()->for($shop)->create(['name' => '対象施設']);
         $otherFacility = Facility::factory()->for($otherShop)->create(['name' => '対象外施設']);
@@ -52,7 +52,9 @@ class AdminReservationManagementTest extends TestCase
         $response = $this->actingAs($admin)->get(route('admin.reservations.index', [
             'shop_id' => $shop->id,
         ]));
-        $response->assertOk()->assertSee('対象店舗');
+        $response->assertOk()
+            ->assertSee('対象店舗')
+            ->assertSee('対象エリア');
         $this->assertSame(1500, (int) $response->viewData('confirmedSales'));
         $this->assertSame(500, (int) $response->viewData('refundedAmount'));
         $this->assertCount(2, $response->viewData('reservations'));
@@ -67,4 +69,22 @@ class AdminReservationManagementTest extends TestCase
         $this->assertStringNotContainsString('対象外店舗', $csv);
         $this->assertStringNotContainsString('9999', $csv);
     }
+
+    public function test_admin_can_use_all_reservation_orders(): void
+    {
+        $admin = User::factory()->create(['role' => 'system_admin']);
+        $shop = Shop::factory()->create();
+        $facility = Facility::factory()->for($shop)->create();
+        Reservation::factory()->create([
+            'reservable_type' => Facility::class,
+            'reservable_id' => $facility->id,
+        ]);
+
+        foreach (['newest', 'oldest', 'shop_asc', 'area_asc', 'facility_asc', 'user_asc', 'status_asc'] as $order) {
+            $this->actingAs($admin)
+                ->get(route('admin.reservations.index', ['order' => $order]))
+                ->assertOk();
+        }
+    }
+
 }

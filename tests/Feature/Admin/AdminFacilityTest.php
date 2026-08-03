@@ -3,6 +3,7 @@
 namespace Tests\Feature\Admin;
 
 use App\Models\Facility;
+use App\Models\Shop;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -29,10 +30,18 @@ class AdminFacilityTest extends TestCase
     public function test_admin_can_view_facility_index(): void
     {
         $admin = $this->createAdminUser();
+        $shop = Shop::factory()->create([
+            'name' => '施設一覧店舗',
+            'area_name' => '梅田',
+        ]);
+        Facility::factory()->for($shop)->create(['name' => '施設一覧会議室']);
 
         $response = $this->actingAs($admin)->get(route('admin.facilities.index'));
 
-        $response->assertStatus(200);
+        $response->assertStatus(200)
+            ->assertSee('施設一覧店舗')
+            ->assertSee('梅田')
+            ->assertSee('施設一覧会議室');
     }
 
     /**
@@ -79,4 +88,42 @@ class AdminFacilityTest extends TestCase
             'is_active' => false,
         ]);
     }
+
+    public function test_admin_can_filter_and_sort_facilities(): void
+    {
+        $admin = $this->createAdminUser();
+        $shop = Shop::factory()->create(['area_name' => '渋谷']);
+        $otherShop = Shop::factory()->create(['area_name' => '梅田']);
+        $facility = Facility::factory()->for($shop)->create([
+            'type' => 'meeting_room',
+            'is_active' => true,
+        ]);
+        Facility::factory()->for($otherShop)->create([
+            'type' => 'area',
+            'is_active' => false,
+        ]);
+
+        $response = $this->actingAs($admin)->get(route('admin.facilities.index', [
+            'shop_id' => $shop->id,
+            'area_name' => '渋谷',
+            'type' => 'meeting_room',
+            'status' => 'active',
+            'order' => 'name_asc',
+        ]));
+
+        $response->assertOk();
+        $this->assertSame([$facility->id], $response->viewData('facilities')->pluck('id')->all());
+
+        $orders = [
+            'id_asc', 'id_desc', 'shop_asc', 'area_asc', 'name_asc', 'name_desc',
+            'price_asc', 'price_desc', 'capacity_asc', 'capacity_desc', 'status_desc',
+        ];
+
+        foreach ($orders as $order) {
+            $this->actingAs($admin)
+                ->get(route('admin.facilities.index', ['order' => $order]))
+                ->assertOk();
+        }
+    }
+
 }

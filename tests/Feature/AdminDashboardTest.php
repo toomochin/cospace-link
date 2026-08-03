@@ -17,7 +17,11 @@ class AdminDashboardTest extends TestCase
     public function test_dashboard_displays_portal_totals_and_today_utilization(): void
     {
         $admin = User::factory()->create(['role' => 'system_admin']);
-        $activeShop = Shop::factory()->create(['is_active' => true]);
+        $activeShop = Shop::factory()->create([
+            'name' => 'ダッシュボード店舗',
+            'area_name' => '渋谷',
+            'is_active' => true,
+        ]);
         $inactiveShop = Shop::factory()->create(['is_active' => false]);
         $facility = Facility::factory()->for($activeShop)->create(['is_active' => true]);
         Facility::factory()->for($inactiveShop)->create(['is_active' => true]);
@@ -60,7 +64,9 @@ class AdminDashboardTest extends TestCase
         $response->assertOk()
             ->assertSee('ポータル全体の状況')
             ->assertSee('累計確定売上')
-            ->assertSee('累計返金額');
+            ->assertSee('累計返金額')
+            ->assertSee('ダッシュボード店舗')
+            ->assertSee('渋谷');
         $this->assertSame(2, $response->viewData('totalShopsCount'));
         $this->assertSame(1, $response->viewData('activeShopsCount'));
         $this->assertSame(1, $response->viewData('activeFacilitiesCount'));

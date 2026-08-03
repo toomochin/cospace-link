@@ -709,7 +709,7 @@
 /* 予約一覧：横並びのコンパクト検索フォーム */
 .admin-container > form.reservation-filter-form {
     display: grid;
-    grid-template-columns: minmax(150px, 1.25fr) repeat(2, minmax(145px, 1fr)) minmax(130px, 0.9fr) auto;
+    grid-template-columns: repeat(4, minmax(115px, 1fr)) minmax(180px, 1.25fr) auto;
     align-items: end;
     gap: 10px;
     margin: 12px 0 16px;
@@ -773,3 +773,47 @@
         text-align: center;
     }
 }
+
+/* 予約一覧は操作ボタンを2段目へ分け、日付・状態欄の重なりを防ぐ */
+@media (min-width: 901px) {
+    .admin-container > form.reservation-filter-form.admin-reservation-filter-form {
+        grid-template-columns: minmax(130px, 1.1fr) repeat(2, minmax(145px, 1fr)) minmax(120px, 0.9fr) minmax(180px, 1.25fr);
+    }
+
+    .admin-reservation-filter-form .reservation-filter-actions {
+        grid-column: 1 / -1;
+        justify-self: end;
+    }
+}
+
+/* 全体管理者の予約一覧：列の重なりを防ぎ、狭い画面では横スクロールする */
+.admin-reservations-table {
+    min-width: 1050px;
+    table-layout: auto;
+}
+
+.admin-reservations-table th:nth-child(2),
+.admin-reservations-table td:nth-child(2) {
+    min-width: 150px;
+}
+
+.admin-reservations-table th:nth-child(3),
+.admin-reservations-table td:nth-child(3) {
+    min-width: 90px;
+}
+
+.admin-reservations-table th:nth-child(4),
+.admin-reservations-table td:nth-child(4),
+.admin-reservations-table th:nth-child(5),
+.admin-reservations-table td:nth-child(5) {
+    min-width: 120px;
+}
+
+.admin-reservations-table .col-datetime {
+    width: 190px;
+    min-width: 190px;
+}
+
+.admin-reservations-table .col-status {
+    width: 120px;
+    min-width: 120px;

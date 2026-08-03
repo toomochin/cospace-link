@@ -25,9 +25,9 @@ class ReservationController extends Controller
         $query = $this->reservationQuery($filters);
         $confirmedSales = (clone $query)->where('reservations.status', 'confirmed')->sum('price');
         $refundedAmount = $this->refundedQuery($filters)->sum('payments.amount');
+        $this->applyOrder($query, $filters['order'] ?? 'newest');
         $reservations = $query
             ->with(['user', 'reservable.shop'])
-            ->orderByDesc('reservations.start_time')
             ->paginate(20)
             ->withQueryString();
         $shops = Shop::query()->orderBy('name')->get(['id', 'name']);
@@ -40,14 +40,15 @@ class ReservationController extends Controller
     public function export(Request $request): StreamedResponse
     {
         $filters = $this->filters($request);
-        $reservations = $this->reservationQuery($filters)
+        $query = $this->reservationQuery($filters);
+        $this->applyOrder($query, $filters['order'] ?? 'newest');
+        $reservations = $query
             ->leftJoin('payments', 'payments.reservation_id', '=', 'reservations.id')
             ->select([
                 'reservations.*', 'payments.status as payment_status',
                 'payments.amount as payment_amount', 'payments.stripe_refund_id',
             ])
             ->with(['user', 'reservable.shop'])
-            ->orderByDesc('reservations.start_time')
             ->get();
 
         return response()->streamDownload(function () use ($reservations): void {
@@ -210,8 +211,52 @@ class ReservationController extends Controller
             'date_from' => ['nullable', 'date'],
             'date_to' => ['nullable', 'date', 'after_or_equal:date_from'],
             'status' => ['nullable', Rule::in(['pending_payment', 'confirmed', 'cancelled'])],
+            'order' => ['nullable', Rule::in([
+                'newest', 'oldest', 'shop_asc', 'area_asc', 'facility_asc', 'user_asc', 'status_asc',
+            ])],
         ]);
     }
+
+    private function applyOrder(Builder $query, string $order): Builder
+    {
+        [$sort, $direction] = match ($order) {
+            'oldest' => ['start_time', 'asc'],
+            'shop_asc' => ['shop', 'asc'],
+            'area_asc' => ['area', 'asc'],
+            'facility_asc' => ['facility', 'asc'],
+            'user_asc' => ['user', 'asc'],
+            'status_asc' => ['status', 'asc'],
+            default => ['start_time', 'desc'],
+        };
+
+        $column = match ($sort) {
+            'shop' => Shop::query()
+                ->select('shops.name')
+                ->join('facilities as order_facilities', 'order_facilities.shop_id', '=', 'shops.id')
+                ->whereColumn('order_facilities.id', 'reservations.reservable_id')
+                ->limit(1),
+            'area' => Shop::query()
+                ->select('shops.area_name')
+                ->join('facilities as order_facilities', 'order_facilities.shop_id', '=', 'shops.id')
+                ->whereColumn('order_facilities.id', 'reservations.reservable_id')
+                ->limit(1),
+            'facility' => Facility::query()
+                ->select('facilities.name')
+                ->whereColumn('facilities.id', 'reservations.reservable_id')
+                ->limit(1),
+            'user' => User::query()
+                ->select('users.name')
+                ->whereColumn('users.id', 'reservations.user_id')
+                ->limit(1),
+            'status' => 'reservations.status',
+            default => 'reservations.start_time',
+        };
+
+        return $query
+            ->orderBy($column, $direction)
+            ->orderBy('reservations.id', $direction);
+    }
+
 
     private function reservationQuery(array $filters): Builder
     {

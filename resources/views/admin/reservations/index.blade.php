@@ -13,7 +13,7 @@
             </div>
         </div>
 
-        <form method='GET' action='{{ route('admin.reservations.index') }}' class='reservation-filter-form'>
+        <form method='GET' action='{{ route('admin.reservations.index') }}' class='reservation-filter-form admin-reservation-filter-form'>
             <label class='reservation-filter-field'>店舗
                 <select name='shop_id'>
                     <option value=''>全店舗</option>
@@ -32,6 +32,18 @@
                     <option value='cancelled' @selected(($filters['status'] ?? '') === 'cancelled')>キャンセル済み</option>
                 </select>
             </label>
+            <label class='reservation-filter-field'>並び順
+                <select name='order'>
+                    <option value='newest' @selected(($filters['order'] ?? 'newest') === 'newest')>利用日時が新しい順</option>
+                    <option value='oldest' @selected(($filters['order'] ?? '') === 'oldest')>利用日時が古い順</option>
+                    <option value='shop_asc' @selected(($filters['order'] ?? '') === 'shop_asc')>店舗名順</option>
+                    <option value='area_asc' @selected(($filters['order'] ?? '') === 'area_asc')>エリア順</option>
+                    <option value='facility_asc' @selected(($filters['order'] ?? '') === 'facility_asc')>施設名順</option>
+                    <option value='user_asc' @selected(($filters['order'] ?? '') === 'user_asc')>予約者名順</option>
+                    <option value='status_asc' @selected(($filters['order'] ?? '') === 'status_asc')>予約状態順</option>
+                </select>
+            </label>
+
             <div class='reservation-filter-actions'>
                 <button type='submit' class='btn-primary-sm'>絞り込む</button>
                 <a href='{{ route('admin.reservations.index') }}' class='btn-cancel'>条件をクリア</a>
@@ -45,10 +57,12 @@
 
         {{-- テーブル一覧 --}}
         <div class='table-wrapper'>
-        <table class="admin-table">
+        <table class="admin-table admin-reservations-table">
             <thead>
                 <tr>
                     <th class="col-id">ID</th>
+                    <th>店舗名</th>
+                    <th>エリア</th>
                     <th>予約者</th>
                     <th>施設名</th>
                     <th class="col-datetime">利用日時</th>
@@ -59,6 +73,8 @@
                 @forelse ($reservations as $reservation)
                     <tr>
                         <td class="col-id">{{ $reservation->id }}</td>
+                        <td>{{ $reservation->reservable?->shop?->name ?? '店舗情報なし' }}</td>
+                        <td>{{ $reservation->reservable?->shop?->area_name ?? '未設定' }}</td>
                         <td>{{ $reservation->user->name ?? '不明' }}</td>
                         <td class="font-bold">{{ $reservation->reservable->name ?? '施設情報なし' }}</td>
                         <td class="col-datetime">
@@ -80,7 +96,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="col-empty">予約データはありません。</td>
+                        <td colspan="7" class="col-empty">予約データはありません。</td>
                     </tr>
                 @endforelse
             </tbody>
