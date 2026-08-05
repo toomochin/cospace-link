@@ -6,6 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
 
+/**
+ * 全体管理者による会員一覧表示と利用状態の切り替えを担当する。
+ */
 class UserController extends Controller
 {
     /**

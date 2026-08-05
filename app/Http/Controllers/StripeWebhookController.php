@@ -12,6 +12,11 @@ use Stripe\Exception\SignatureVerificationException;
 use Stripe\WebhookSignature;
 use UnexpectedValueException;
 
+/**
+ * Stripe CheckoutのWebhookを受信し、予約状態と決済記録を確定する。
+ *
+ * 署名検証とイベントIDの記録により、改ざんと同一イベントの二重処理を防ぐ。
+ */
 class StripeWebhookController extends Controller
 {
     public function __invoke(Request $request)

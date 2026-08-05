@@ -11,6 +11,11 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Throwable;
 
+/**
+ * 全体管理者による加盟店舗と店舗管理者アカウントの管理を担当する。
+ *
+ * 店舗登録と招待メール送信を連携し、登録失敗時はトランザクションで巻き戻す。
+ */
 class ShopController extends Controller
 {
     public function index()

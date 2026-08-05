@@ -8,6 +8,9 @@ use App\Models\Reservation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * 店舗管理者向けダッシュボードの集計表示を担当する。
+ */
 class DashboardController extends Controller
 {
     public function __invoke(Request $request)

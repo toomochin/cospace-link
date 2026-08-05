@@ -8,13 +8,20 @@ use App\Support\AmenityNormalizer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * 店舗管理者による所属店舗情報の表示・更新を担当する。
+ */
 class ShopController extends Controller
 {
+    /** ログインユーザーの所属店舗を編集画面へ渡す。 */
     public function edit(Request $request)
     {
         return view('owner.shop.edit', ['shop' => $request->user()->shop]);
     }
 
+    /**
+     * 店舗情報と設備タグを更新し、画像差し替え時だけ旧画像を削除する。
+     */
     public function update(ShopRequest $request)
     {
         $shop = $request->user()->shop;

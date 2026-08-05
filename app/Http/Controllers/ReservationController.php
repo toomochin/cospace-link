@@ -17,6 +17,11 @@ use Stripe\Checkout\Session as StripeSession;
 use Stripe\Stripe;
 use Throwable;
 
+/**
+ * 会員向けの予約確認・作成・一覧・キャンセル処理を担当する。
+ *
+ * 予約競合の判定と決済処理は専用サービスへ委譲する。
+ */
 class ReservationController extends Controller
 {
     /**

@@ -5,6 +5,9 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Shop;
 
+/**
+ * 加盟店舗の掲載状態を切り替える単一アクションを担当する。
+ */
 class ToggleShopStatusController extends Controller
 {
     public function __invoke(Shop $shop)

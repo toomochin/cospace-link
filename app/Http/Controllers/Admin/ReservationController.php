@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/**
+ * 全体管理者向けの予約横断検索・CSV出力・代理登録を担当する。
+ */
 class ReservationController extends Controller
 {
     /**

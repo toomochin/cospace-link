@@ -8,6 +8,9 @@ use App\Support\OpeningHours;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 
+/**
+ * 複数店舗を横断した施設検索を担当する。
+ */
 class PortalFacilityController extends FacilityController
 {
     public function index(FacilitySearchRequest $request)

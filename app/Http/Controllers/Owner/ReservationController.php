@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/**
+ * 店舗管理者向けの自店舗予約一覧・CSV出力を担当する。
+ */
 class ReservationController extends Controller
 {
     public function index(Request $request)

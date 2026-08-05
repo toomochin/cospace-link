@@ -10,6 +10,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 
+/**
+ * 全体管理者による全店舗の施設管理を担当する。
+ */
 class FacilityController extends Controller
 {
     public function index(Request $request)

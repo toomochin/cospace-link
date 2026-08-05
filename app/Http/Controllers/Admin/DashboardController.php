@@ -9,6 +9,9 @@ use App\Models\Shop;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
+/**
+ * 全体管理者向けダッシュボードの横断集計を担当する。
+ */
 class DashboardController extends Controller
 {
     public function index()

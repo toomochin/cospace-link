@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * ログインユーザー自身のプロフィール表示・更新を担当する。
+ */
 class ProfileController extends Controller
 {
     /**

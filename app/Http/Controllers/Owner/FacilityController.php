@@ -8,6 +8,9 @@ use App\Models\Facility;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * 店舗管理者による所属店舗の施設CRUDを担当する。
+ */
 class FacilityController extends Controller
 {
     public function index(Request $request)

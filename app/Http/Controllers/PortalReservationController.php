@@ -12,6 +12,9 @@ use Illuminate\Validation\ValidationException;
 use Stripe\Checkout\Session as StripeSession;
 use Stripe\Stripe;
 
+/**
+ * ポータル検索からの予約作成と決済開始を担当する。
+ */
 class PortalReservationController extends ReservationController
 {
     public function store(

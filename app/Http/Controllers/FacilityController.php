@@ -7,6 +7,11 @@ use App\Models\Facility;
 use App\Models\Reservation;
 use Carbon\Carbon;
 
+/**
+ * 公開中の施設一覧と施設詳細を会員向けに提供する。
+ *
+ * 日付・時間条件から予約可能枠も組み立てる。
+ */
 class FacilityController extends Controller
 {
     /**
